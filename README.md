@@ -1,1 +1,1 @@
-# R-cognitive-class
+# learning-R
