@@ -1,26 +1,97 @@
 library(magrittr)
-library(rvest)
+library(dplyr)
+library(httr)
 
-site.url <- 'https://github.com/krzjoa/awesome-python-data-science/blob/master/README.md'
-site.url2 <- 'https://raw.githubusercontent.com/krzjoa/awesome-python-data-science/master/README.md'
+url <- "https://github.com/r0f1/datascience"
+
+#' 
+#' Checks, if the given URL is a Github URL
+#' If not, it returns README download URL using Github v3 API
+#' @param url Url to the library
+#' 
+as_raw_github <- function(url){
+  if(grepl("(https://)?raw.githubusercontent.com.*\\.md", url)) return(url)
+  
+  url.divided <- stringr::str_match(url, "github.com\\/(.*)\\/(.*)") 
+  user.name <- url.divided[,2]
+  repo.name <- url.divided[,3]
+  
+  sprintf("http://api.github.com/repos/%s/%s/readme", user.name, repo.name) %>% 
+    GET() %>% 
+    content() -> readme
+  return(readme$download_url)
+}
 
 #' If url is from Github
-is_github_url <- function(url){
+is_github <- function(url){
+  grepl("(https://)?github.com/", url) |
+    grepl("(https://)?raw.githubusercontent.com", url)
+}
+
+awesome_list <- function(url, github.info = FALSE){
   
+    if(!is_github(url))
+      print(paste0(url, " is not a corect Github URL."))
+  
+    # Converting URL to its raw form
+    url <- as_raw_github(url)
+  
+    # Fetching markdown from the Web
+    file.content <- suppressWarnings(readLines(url))
+    
+    # Parsing markdown list
+    file.content %>% 
+      stringr::str_match("\\[(.*?)\\]\\((.*?)\\).?-(.*\\.)") -> awesome.list
+    
+    # Removing empty lines
+    awesome.list <- awesome.list %>% 
+      na.omit() %>% 
+      as.data.frame() %>% 
+      `colnames<-`(c("original", "name", "url", "description"))
+    
+    # Username & repo
+    awesome.list$url %>% 
+      stringr::str_match("github.com\\/(.*)\\/(.*)") %>% 
+      as.data.frame() %>% 
+      `colnames<-`(c("full.name", "user.name", "repo.name")) %>% 
+      select(-full.name) -> awesome.list.urls
+    
+    awesome.list <- cbind(awesome.list, awesome.list)
+    
+    return(awesome.list)
 }
 
-get_list2 <- function(url){
-  file.content <- suppressWarnings(readLines(site.url2))
-  file.content %>% sapply(function(x) stringr::str_match(x, "\\(.*\\)")) %>% View
-    #stringr::str_match_all("[\\(\\)]") %>% View
+
+call_github_api_v3 <- function(user, repo){
+  
+  # Get basic info about repo
+  sprintf("http://api.github.com/repos/%s/%s", user, repo) %>% 
+    GET() %>% 
+    content() -> basic.info
+  
+  # Get topics
+  sprintf("http://api.github.com/repos/%s/%s/topics", user, repo) %>% 
+    GET(accept("application/vnd.github.mercy-preview+json")) %>% 
+    content() -> topics
+  
+  output <- list(
+    # Basic info
+    github.desc = basic.info$description,
+    stars = basic.info$stargazers_count,
+    forks = basic.info$forks_count,
+    
+    # Topics
+    topics = paste0(topics %>% unlist(), collapse = ",")
+  )
+  
+  return(output)
 }
 
-get_list <- function(url){
-    file.content <- suppressWarnings(readLines(site.url2))
-    
-    file.content %>% stringr::str_replace_all("[\r\n]" , "")
-    
-    commonmark::markdown_xml(file.content) -> cnt
-    cnt %>% stringr::str_replace_all("[\r\n]" , "")
-    xml2::xml_find_all(xmldoc$doc, ".//bullet")
+
+check_on_github <- function(awesome.list){
+  
+  awesome.list <- awesome.list %>% 
+    mutate(is.github = is_github(url))
+  
+  
 }
