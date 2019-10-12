@@ -25,7 +25,7 @@ run_ucb <- function(m1, m2, m3, N, alpha=0.0001) {
 }
 
 
-c1 <- run_p_greedy(1, 2, 3, .01, 10000)
-c2 <- run_ucb(1, 2, 3, 1000)
-visualize(list(c1, c2), 1, 2, 3)
+# c1 <- run_p_greedy(1, 2, 3, .01, 10000)
+# c2 <- run_ucb(1, 2, 3, 1000)
+# visualize(list(c1, c2), 1, 2, 3)
           
