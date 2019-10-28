@@ -17,3 +17,7 @@ rcpparma_bothproducts <- function(x) {
     .Call(`_dl_rcpparma_bothproducts`, x)
 }
 
+test_array_fire <- function() {
+    .Call(`_dl_test_array_fire`)
+}
+

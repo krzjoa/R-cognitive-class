@@ -32,3 +32,12 @@ show_devices <- function(){
   
   
 }
+
+
+# Building Rcpp
+Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+# Sys.setenv("PKG_CXXFLAGS"="-I/opt/arrayfire/include/")
+Sys.setenv("PKG_CPPFLAGS"="-I/opt/arrayfire/include/")
+# Sys.setenv("PKG_LIBS"="-L/opt/arrayfire/lib64 -laf")
+Sys.setenv("PKG_LIBS"="-L/opt/arrayfire/lib64/ -laf")
+

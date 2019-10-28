@@ -49,12 +49,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_array_fire
+bool test_array_fire();
+RcppExport SEXP _dl_test_array_fire() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(test_array_fire());
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_dl_rcpparma_hello_world", (DL_FUNC) &_dl_rcpparma_hello_world, 0},
     {"_dl_rcpparma_outerproduct", (DL_FUNC) &_dl_rcpparma_outerproduct, 1},
     {"_dl_rcpparma_innerproduct", (DL_FUNC) &_dl_rcpparma_innerproduct, 1},
     {"_dl_rcpparma_bothproducts", (DL_FUNC) &_dl_rcpparma_bothproducts, 1},
+    {"_dl_test_array_fire", (DL_FUNC) &_dl_test_array_fire, 0},
     {NULL, NULL, 0}
 };
 

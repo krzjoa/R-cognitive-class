@@ -2,6 +2,7 @@
 
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
 #include "RcppArmadillo.h"
+#include <arrayfire.h>
 
 // via the depends attribute we tell Rcpp to create hooks for
 // RcppArmadillo so that the build process will know what to do
@@ -46,7 +47,18 @@ double rcpparma_innerproduct(const arma::colvec & x) {
 // [[Rcpp::export]]
 Rcpp::List rcpparma_bothproducts(const arma::colvec & x) {
     arma::mat op = x * x.t();
+    
+    
+    
     double    ip = arma::as_scalar(x.t() * x);
     return Rcpp::List::create(Rcpp::Named("outer")=op,
                               Rcpp::Named("inner")=ip);
+}
+
+
+// [[Rcpp::export]]
+bool test_array_fire(){
+    af::randu(1, 4);    
+    
+    return true;
 }
