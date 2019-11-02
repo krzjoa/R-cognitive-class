@@ -41,5 +41,12 @@ agent <- R6Class(
   
   public = list(
     
+    eps = 0,
+    
+    
+    initialize = function(eps)
+      
+    }
+    
   )
 )
