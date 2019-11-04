@@ -2,6 +2,7 @@ library(magrittr)
 library(R6)
 library(ggplot2)
 
+
 #' A class to store current state and check, if game is finished
 tic_tac_toe <- R6Class(
   classname = 'tic_tac_toe',
@@ -55,9 +56,10 @@ tic_tac_toe <- R6Class(
       ttt_hash_state(self$board)
     },
       
-    print_board = function(){
-      tmp.board <- self$board
+    plot_board = function(){
+      
     }
+    
   )
 )
 
@@ -105,11 +107,6 @@ ttt_get_winner <- function(board){
   }
   return(NA)
 }
-
-ttt_get_winner(brd[1:9])
-
-possible.states
-
 
 
 #' @title Check, if tic-tac-toe state is possible
@@ -173,37 +170,25 @@ na_false <- function(x){
 }
 
 #' @title Init value function
-#' @name ttt_init_tables
-ttt_init_tables <- function(state_triples, player){
+#' @name ttt_init_value_function
+#' @description 
+#' Inits value 
+ttt_init_value_function <- function(state_triples, player){
   player <- if(player == 'x') 1 else 0
   value.function <- dplyr::case_when(
-    who.won == player ~ 1,
-    is.na(who.won) & is.ended ~ 0,
-    !is.ended ~ 0.5,
-    who.won != player ~ 0
+    state_triples$who.won == player ~ 1,
+    is.na(state_triples$who.won) & state_triples$is.ended ~ 0,
+    !state_triples$is.ended ~ 0.5,
+    state_triples$who.won != player ~ 0
   )
   cbind(state_triples, value.function)
 }
 
-st <- ttt_init_tables(ps, player = 'x')
+ps <- ttt_state_triples()
+st <- ttt_init_value_function(ps, player = 'x')
 
 
 ttt <- tic_tac_toe$new()
 ttt$board
 ttt$get_state()
-
 ttt$is_game_over()
-
-ttt$board <- diag(3)
-
-# apply(ttt$board, 2, var) %>% equals(0) %>% neg %>% any()
-# 
-# # Testing
-# m <- matrix(NA, 3, 3)
-# m[, 1] <- 1
-# apply(m, 2, var)
-
-ttt$board <- diag(3)
-
-ttt$is_game_over()
-
