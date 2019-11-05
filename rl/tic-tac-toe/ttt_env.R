@@ -56,7 +56,17 @@ tic_tac_toe <- R6Class(
       ttt_hash_state(self$board)
     },
       
-    plot_board = function(){
+    reward = function(sym){
+      if(!self$is_game_over())
+        return(0)
+
+    if(self$winner == sym) 
+      return(1)
+    else
+      return(0)
+    },
+    
+    print_board = function(){
       
     }
     
@@ -107,7 +117,6 @@ ttt_get_winner <- function(board){
   }
   return(NA)
 }
-
 
 #' @title Check, if tic-tac-toe state is possible
 #' @name ttt_is_state_possible
@@ -187,8 +196,11 @@ ttt_init_value_function <- function(state_triples, player){
 ps <- ttt_state_triples()
 st <- ttt_init_value_function(ps, player = 'x')
 
-
 ttt <- tic_tac_toe$new()
 ttt$board
 ttt$get_state()
 ttt$is_game_over()
+
+ttt$board <- diag(3)
+
+ttt$reward(sym = 1)

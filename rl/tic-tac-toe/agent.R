@@ -1,40 +1,3 @@
-# play_game <- function(p1, p2, env, draw=FALSE){
-#   current.player <- NA
-#   # Przechodzimy pętlę, póki gra się nie skończyła
-#   while(!env$game_over()){
-#     if(current.player == p1)
-#       current.player <- p2
-#     else
-#       current.player <- p1
-#   }
-#   
-#   if(draw){
-#     if(draw == 1 & current.player == p1){
-#       env$draw_board()
-#     }
-#     if(draw == 2 & current.player == p2){
-#       env$draw_board()
-#     }
-#   }
-#   # player makes a move
-#   current.player$take_action(env)
-#   
-#   # Update state histories
-#   state <- env$get_state()
-#   p1$update_state_history(state)
-#   p2$update_state_history(state)
-#   
-#   if(draw)
-#     env$draw_board()
-#   
-#   # Update value function
-#   p1$update(env)
-#   p2$update(env)
-# }
-# 
-# 
-# diag(3) %>% antidiagonal()
-
 agent <- R6Class(
   classname = 'agent',
   
@@ -44,7 +7,7 @@ agent <- R6Class(
     eps = 0,
     alpha = 0,
     value.function = NA,
-    state.history = list(),
+    state.history = c(),
     
     initialize = function(eps=0.1, alpha=0.5){
       self$eps <- eps
@@ -59,18 +22,47 @@ agent <- R6Class(
       self$symbol <- symbol
     },
     
-    take_action <- function(env){
+    take_action = function(env){
       # Taking an action based on epsilon-greedy strategy
       r <- runif(1)
       best.state <- NA
+      possible.moves <- which(is.na(env$board %>% as.vector()))
       
-      if(r < self$eps)
-        possible.moves <- list()
-        for(i in 1:9){
-          for(j in 1:9){
-            
+      if(r < self$eps){
+        idx <-  sample(possible.moves, 1)
+        next.move <- possible.moves[idx]
+      } else {
+        next.move <- NA
+        best.value <- -1
+        tmp.board <- env$board
+        for(i in possible.moves){
+          tmp.board[i] <- self$symbol
+          state.hash <- ttt_hash_state(tmp.board)
+          
+          browser()
+          
+          value <- self$value.function[self$value.function$hash == state.hash]
+          cond <- value > best.value
+          if(cond){
+            best.value <- value
+            best.state <- state.hash
+            next.move <- i
           }
         }
+      }
+    },
+    update_state_history = function(s){
+      self$state.history <- c(self$state.history, s)
+    },
+    
+    update = function(env){
+      reward <- env$reward(self$sym)
+      target <- reward
+      for(prev in rev(self$state.history)){
+        value <- self$value.function[prev] + self$alpha * (target - self$value.funcion[prerv])
+        taget <- value
+      }
+      self$history <- c()
     }
     
   )
