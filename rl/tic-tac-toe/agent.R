@@ -23,6 +23,7 @@ agent <- R6Class(
     },
     
     take_action = function(env){
+      
       # Taking an action based on epsilon-greedy strategy
       r <- runif(1)
       best.state <- NA
@@ -34,14 +35,19 @@ agent <- R6Class(
       } else {
         next.move <- NA
         best.value <- -1
-        tmp.board <- env$board
+        
         for(i in possible.moves){
+          tmp.board <- env$board
           tmp.board[i] <- self$symbol
           state.hash <- ttt_hash_state(tmp.board)
           
-          browser()
+          value <- self$value.function[self$value.function$hash == state.hash, ]$value
           
-          value <- self$value.function[self$value.function$hash == state.hash]
+          # print()
+          # 
+            if(length(value) == 0)
+              browser()
+          
           cond <- value > best.value
           if(cond){
             best.value <- value
@@ -50,19 +56,26 @@ agent <- R6Class(
           }
         }
       }
+      env$board[next.move] <- self$symbol
     },
     update_state_history = function(s){
       self$state.history <- c(self$state.history, s)
     },
     
     update = function(env){
-      reward <- env$reward(self$sym)
+      reward <- env$reward(self$symbol)
       target <- reward
       for(prev in rev(self$state.history)){
-        value <- self$value.function[prev] + self$alpha * (target - self$value.funcion[prerv])
+        
+        # browser()
+        
+        # Value function update
+        previous.state <- self$value.function[self$value.function$hash == prev, ]$value
+        value <- previous.state + self$alpha * (target - previous.state)
+        self$value.function[self$value.function$hash == prev, ]$value <- value
         taget <- value
       }
-      self$history <- c()
+      self$state.history <- c()
     }
     
   )

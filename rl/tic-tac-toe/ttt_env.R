@@ -11,7 +11,7 @@ tic_tac_toe <- R6Class(
     
     # Variables
     board = matrix(NA, 3, 3),
-    winner = NA,
+    winner = -1,
     
     # Methods
     is_game_over = function(){
@@ -59,15 +59,19 @@ tic_tac_toe <- R6Class(
     reward = function(sym){
       if(!self$is_game_over())
         return(0)
-
-    if(self$winner == sym) 
-      return(1)
-    else
-      return(0)
-    },
+      
+      if(self$winner == sym) 
+        return(1)
+      else
+        return(0)
+  },
     
     print_board = function(){
       
+    },
+  
+    reset_board = function(){
+      self$board <- matrix(NA, 3, 3)
     }
     
   )
@@ -171,7 +175,7 @@ ttt_state_triples <- function(){
   data.frame(hash = hashes, is.ended = is.ended, who.won = who.won)
 }
 
-ps <- ttt_state_triples()
+# ps <- ttt_state_triples()
 
 #' Works on logical vetors
 na_false <- function(x){
@@ -184,23 +188,23 @@ na_false <- function(x){
 #' Inits value 
 ttt_init_value_function <- function(state_triples, player){
   player <- if(player == 'x') 1 else 0
-  value.function <- dplyr::case_when(
+  value <- dplyr::case_when(
     state_triples$who.won == player ~ 1,
     is.na(state_triples$who.won) & state_triples$is.ended ~ 0,
     !state_triples$is.ended ~ 0.5,
     state_triples$who.won != player ~ 0
   )
-  cbind(state_triples, value.function)
+  cbind(state_triples, value)
 }
 
-ps <- ttt_state_triples()
-st <- ttt_init_value_function(ps, player = 'x')
-
-ttt <- tic_tac_toe$new()
-ttt$board
-ttt$get_state()
-ttt$is_game_over()
-
-ttt$board <- diag(3)
-
-ttt$reward(sym = 1)
+# ps <- ttt_state_triples()
+# st <- ttt_init_value_function(ps, player = 'x')
+# 
+# ttt <- tic_tac_toe$new()
+# ttt$board
+# ttt$get_state()
+# ttt$is_game_over()
+# 
+# ttt$board <- diag(3)
+# 
+# ttt$reward(sym = 1)

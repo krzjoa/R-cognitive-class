@@ -1,14 +1,19 @@
 play_game <- function(p1, p2, env, draw=FALSE){
-  current.player <- list(symbol = 5)
+  current.player <- list(symbol = -1)
   
   # Przechodzimy pętlę, póki gra się nie skończyła
   while(!env$is_game_over()){
+    
+    print('yo')
     
     if(current.player$symbol == p1$symbol){
       current.player <- p2
     } else {
       current.player <- p1
     }
+    
+    # print(current.player$symbol)
+    # browser()
 
     # player makes a move
     current.player$take_action(env)
@@ -24,6 +29,8 @@ play_game <- function(p1, p2, env, draw=FALSE){
   p2$update(env)
 }
 
+source('ttt_env.R')
+source('agent.R')
 
 # Create two agents
 player1 <- agent$new()
@@ -46,6 +53,15 @@ player2$set_symbol(0)
 T <- 1000
 
 for(t in 1:T){
+  
+  print(t)
+  
   play_game(player1, player2, env = ttt)
+  ttt$reset_board()
+  
+  # if(t %% 100 == 0)
+  #   browser()
+  
 }
+
 
