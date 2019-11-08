@@ -30,8 +30,7 @@ agent <- R6Class(
       possible.moves <- which(is.na(env$board %>% as.vector()))
       
       if(r < self$eps){
-        idx <-  sample(possible.moves, 1)
-        next.move <- possible.moves[idx]
+        next.move <-  sample(possible.moves, 1)
       } else {
         next.move <- NA
         best.value <- -1
@@ -42,13 +41,8 @@ agent <- R6Class(
           state.hash <- ttt_hash_state(tmp.board)
           
           value <- self$value.function[self$value.function$hash == state.hash, ]$value
-          
-          # print()
-          # 
-            if(length(value) == 0)
-              browser()
-          
           cond <- value > best.value
+          
           if(cond){
             best.value <- value
             best.state <- state.hash
@@ -66,9 +60,6 @@ agent <- R6Class(
       reward <- env$reward(self$symbol)
       target <- reward
       for(prev in rev(self$state.history)){
-        
-        # browser()
-        
         # Value function update
         previous.state <- self$value.function[self$value.function$hash == prev, ]$value
         value <- previous.state + self$alpha * (target - previous.state)

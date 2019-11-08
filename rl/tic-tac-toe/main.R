@@ -4,8 +4,6 @@ play_game <- function(p1, p2, env, draw=FALSE){
   # Przechodzimy pętlę, póki gra się nie skończyła
   while(!env$is_game_over()){
     
-    print('yo')
-    
     if(current.player$symbol == p1$symbol){
       current.player <- p2
     } else {
@@ -13,7 +11,6 @@ play_game <- function(p1, p2, env, draw=FALSE){
     }
     
     # print(current.player$symbol)
-    # browser()
 
     # player makes a move
     current.player$take_action(env)
@@ -37,7 +34,6 @@ player1 <- agent$new()
 player2 <- agent$new()
 
 # Environment
-ttt <- tic_tac_toe$new()
 state.winner.triples <- ttt_state_triples()
 
 value.function.x <- ttt_init_value_function(state_triples = state.winner.triples,
@@ -53,12 +49,8 @@ player2$set_symbol(0)
 T <- 1000
 
 for(t in 1:T){
-  
-  print(t)
-  
-  play_game(player1, player2, env = ttt)
-  ttt$reset_board()
-  
+    play_game(player1, player2, env = tic_tac_toe$new())
+
   # if(t %% 100 == 0)
   #   browser()
   

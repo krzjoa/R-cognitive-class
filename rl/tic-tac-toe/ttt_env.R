@@ -60,7 +60,9 @@ tic_tac_toe <- R6Class(
       if(!self$is_game_over())
         return(0)
       
-      if(self$winner == sym) 
+      
+      
+      if(na_false(self$winner == sym)) 
         return(1)
       else
         return(0)
@@ -148,6 +150,12 @@ ttt_is_state_possible <- function(board){
   return(is.possible.1 & is.possible.2 & is.possible.3)
 }
 
+# ttt_is_state_possible(brd)
+# 
+# 
+# brd <- c(1,1,0,NA,NA,NA,NA,NA,NA) %>% matrix(3,3)
+# ttt_hash_state(brd)
+
 
 #' @title Triples for tic-tac-toe with possible states and answer: is game ended?
 #' @name ttt_state_triples
@@ -156,10 +164,13 @@ ttt_state_triples <- function(){
   all.states <- expand.grid(x) 
   
   is_possible <- function(...) ttt_is_state_possible(unlist(list(...)))
-
+  
+  # browser()
+  
   # TODO: optimize!!!
   filtered <-purrr::pmap(all.states, is_possible) %>% unlist()
   possible.states <- all.states %>% dplyr::filter(filtered)
+  # possible.states <- all.states
    
   # Add is ended & winner
   is.ended <- !is.na(purrr::pmap(possible.states, sum))
