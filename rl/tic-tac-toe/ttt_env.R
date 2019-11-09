@@ -19,14 +19,14 @@ tic_tac_toe <- R6Class(
       # Columns
       who.won <- apply(self$board, 2, mean)
       if(na_false(any(who.won == 0)| any(who.won == 1))){
-        self$winner <- who.won[(who.won == 0) | (who.won == 1)]
+        self$winner <- who.won[(who.won == 0) | (who.won == 1)] %>% sum(na.rm = TRUE)
         return(TRUE)
       }
       
       # Rows
       who.won <- apply(self$board, 1, mean)
       if(na_false(any(who.won == 0)| any(who.won == 1))){
-        self$winner <- who.won[(who.won == 0) |( who.won == 1)]
+        self$winner <- who.won[(who.won == 0) |( who.won == 1)] %>% sum(na.rm = TRUE)
         return(TRUE)
       }
        
@@ -60,7 +60,8 @@ tic_tac_toe <- R6Class(
       if(!self$is_game_over())
         return(0)
       
-      
+      if(length(self$winner) > 1)
+        browser()
       
       if(na_false(self$winner == sym)) 
         return(1)

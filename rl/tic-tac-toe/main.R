@@ -46,14 +46,23 @@ value.function.o <- ttt_init_value_function(state_triples = state.winner.triples
 player2$set_value_function(value.function.o)
 player2$set_symbol(0)
 
-T <- 1000
+T <- 10000
 
 for(t in 1:T){
+    print(t)
     play_game(player1, player2, env = tic_tac_toe$new())
 
   # if(t %% 100 == 0)
   #   browser()
   
 }
+
+save(player1, file = 'player1.RData')
+save(player2, file = 'player2.RData')
+
+
+
+
+
 
 

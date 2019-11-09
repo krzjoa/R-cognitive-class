@@ -22,6 +22,25 @@ agent <- R6Class(
       self$symbol <- symbol
     },
     
+    play = function(env){
+      possible.moves <- which(is.na(env$board %>% as.vector()))
+    
+      all.moves <- data.frame()
+      
+      for(i in possible.moves){
+          tmp.board <- env$board
+          tmp.board[i] <- self$symbol
+          state.hash <- ttt_hash_state(tmp.board)
+          value <- self$value.function[self$value.function$hash == state.hash, ]$value
+          all.moves <- all.moves %>% 
+            dplyr::bind_rows(list(hash = state.hash, value = value, move = i))
+      }
+      
+      best.move <- all.moves[which.max(all.moves$value), ]$move
+      env$board[best.move] <- self$symbol
+    },
+    
+    
     take_action = function(env){
       
       # Taking an action based on epsilon-greedy strategy
@@ -71,5 +90,3 @@ agent <- R6Class(
     
   )
 )
-
-
