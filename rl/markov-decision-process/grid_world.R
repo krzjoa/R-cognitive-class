@@ -73,31 +73,6 @@ grid_world <- R6Class(
 
 
 
-m(1, 2, 3 | 
-  4, 5, 6 | 
-  7, 8, 9)
-
-m(1, 2, 3 :
-  3, 4, 5)
-
-matrick(1, 2, 3 |
-        5, 6, 7 |
-        8, 9, 10)
-
-m <- function(...){
-  
-  # Capture user input  
-  raw.matrix <- rlang::exprs(...)
-  
-  # 
-  sapply(raw.matrix, function(x) unlist(as.list(x))) 
-  
-  sapply(raw.matrix, function(x) length(as.list(x))) 
-  
-  # z <- sapply(..., substitute)
-  browser()
-}
-
 
 gw <- grid_world$new(10, 5, c(0, 0))
 
