@@ -1,7 +1,16 @@
 #' @name v
 #' @title A shortcut to create a vector
+#' @description 
+#' This function provides convenient shortcut 
+#' to create a vertical (column) vector. 
 #' @param ... arbitrary number of values
 #' @return matrix with dims n_elements x 1
+#' @example 
+#' v(1, 2, 3)
+#'      [,1]
+#' [1,]    1
+#' [2,]    2
+#' [3,]    3
 v <- function(...){
   matrix(c(...), ncol = 1)
 }
