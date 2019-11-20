@@ -1,3 +1,10 @@
+#' @name v
+#' @title A shortcut to create a vector
+#' @param ... arbitrary number of values
+#' @return matrix with dims n_elements x 1
+v <- function(...){
+  matrix(c(...), ncol = 1)
+}
 
 m <- function(...){
   # Capture user input  
