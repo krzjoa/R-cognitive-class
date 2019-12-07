@@ -11,7 +11,7 @@ tic_tac_toe <- R6Class(
     
     # Variables
     board = matrix(NA, 3, 3),
-    winner = -1,
+    winner = NA,
     
     # Methods
     is_game_over = function(){
@@ -19,14 +19,14 @@ tic_tac_toe <- R6Class(
       # Columns
       who.won <- apply(self$board, 2, mean)
       if(na_false(any(who.won == 0)| any(who.won == 1))){
-        self$winner <- who.won[(who.won == 0) | (who.won == 1)] %>% sum(na.rm = TRUE)
+        self$winner <- who.won[(who.won == 0) | (who.won == 1)]
         return(TRUE)
       }
       
       # Rows
       who.won <- apply(self$board, 1, mean)
       if(na_false(any(who.won == 0)| any(who.won == 1))){
-        self$winner <- who.won[(who.won == 0) |( who.won == 1)] %>% sum(na.rm = TRUE)
+        self$winner <- who.won[(who.won == 0) |( who.won == 1)]
         return(TRUE)
       }
        
@@ -59,28 +59,21 @@ tic_tac_toe <- R6Class(
     reward = function(sym){
       if(!self$is_game_over())
         return(0)
-      
-      if(length(self$winner) > 1)
-        browser()
-      
-      if(na_false(self$winner == sym)) 
-        return(1)
-      else
-        return(0)
-  },
+
+    if(self$winner == sym) 
+      return(1)
+    else
+      return(0)
+    },
     
     print_board = function(){
       
-    },
-  
-    reset_board = function(){
-      self$board <- matrix(NA, 3, 3)
     }
     
   )
 )
 
-#' NA = 2
+  #' NA = 2
 ttt_hash_state <- function(board){
   flattened.board <- board %>% as.vector()
   flattened.board[is.na(flattened.board)] <- 2
@@ -151,12 +144,6 @@ ttt_is_state_possible <- function(board){
   return(is.possible.1 & is.possible.2 & is.possible.3)
 }
 
-# ttt_is_state_possible(brd)
-# 
-# 
-# brd <- c(1,1,0,NA,NA,NA,NA,NA,NA) %>% matrix(3,3)
-# ttt_hash_state(brd)
-
 
 #' @title Triples for tic-tac-toe with possible states and answer: is game ended?
 #' @name ttt_state_triples
@@ -165,13 +152,10 @@ ttt_state_triples <- function(){
   all.states <- expand.grid(x) 
   
   is_possible <- function(...) ttt_is_state_possible(unlist(list(...)))
-  
-  # browser()
-  
+
   # TODO: optimize!!!
   filtered <-purrr::pmap(all.states, is_possible) %>% unlist()
   possible.states <- all.states %>% dplyr::filter(filtered)
-  # possible.states <- all.states
    
   # Add is ended & winner
   is.ended <- !is.na(purrr::pmap(possible.states, sum))
@@ -187,7 +171,7 @@ ttt_state_triples <- function(){
   data.frame(hash = hashes, is.ended = is.ended, who.won = who.won)
 }
 
-# ps <- ttt_state_triples()
+ps <- ttt_state_triples()
 
 #' Works on logical vetors
 na_false <- function(x){
@@ -200,23 +184,23 @@ na_false <- function(x){
 #' Inits value 
 ttt_init_value_function <- function(state_triples, player){
   player <- if(player == 'x') 1 else 0
-  value <- dplyr::case_when(
+  value.function <- dplyr::case_when(
     state_triples$who.won == player ~ 1,
     is.na(state_triples$who.won) & state_triples$is.ended ~ 0,
     !state_triples$is.ended ~ 0.5,
     state_triples$who.won != player ~ 0
   )
-  cbind(state_triples, value)
+  cbind(state_triples, value.function)
 }
 
-# ps <- ttt_state_triples()
-# st <- ttt_init_value_function(ps, player = 'x')
-# 
-# ttt <- tic_tac_toe$new()
-# ttt$board
-# ttt$get_state()
-# ttt$is_game_over()
-# 
-# ttt$board <- diag(3)
-# 
-# ttt$reward(sym = 1)
+ps <- ttt_state_triples()
+st <- ttt_init_value_function(ps, player = 'x')
+
+ttt <- tic_tac_toe$new()
+ttt$board
+ttt$get_state()
+ttt$is_game_over()
+
+ttt$board <- diag(3)
+
+ttt$reward(sym = 1)
