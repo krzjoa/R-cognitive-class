@@ -66,16 +66,17 @@ dir_structure <- function(config.file.section, root.key = 'kRoot'){
   }
 }
                                           
-nested_path <- function(path = "."){
+nested_path <- function(path = ".", naming = basename){
   if(dir.exists(path)){
     file.list <- list.files(path, recursive = FALSE, 
                             include.dirs = TRUE, full.names = TRUE)
-    file.list <- setNames(file.list, basename(file.list))
+    file.list <- setNames(file.list, naming(file.list))
     c(list('.' = path), as.list(Map(nested_path, file.list)))
   } else {
     path
   }
 }
+
                                           
 
 cnfs <- dir_structure(file.section)
