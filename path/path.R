@@ -59,6 +59,19 @@ dir_structure <- function(file.section, root.key = 'kRoot'){
     path_elem(node = file.section[[1]])
   }
 }
+                                          
+nested_path <- function(path = ".", naming = basename){
+  if(dir.exists(path)){
+    file.list <- list.files(path, recursive = FALSE, 
+                            include.dirs = TRUE, full.names = TRUE)
+    file.list <- setNames(file.list, naming(file.list))
+    c(list('.' = path), as.list(Map(nested_path, file.list)))
+  } else {
+    path
+  }
+}
+
+                                          
 
 cnf <- config::get(config = 'default', file = 'conf.yml')
 file.section <- cnf$kFiles
