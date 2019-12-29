@@ -1,10 +1,4 @@
-path_elem <- function(node = NULL, children = NULL, ...){
-  
-  # if(length(node) > 1){
-  #   node <- node[1]
-  #   children <- node[-1]
-  # }
-  
+path_elem <- function(node = NULL, children = NULL){
   if(is.null(names(children)) & !is.null(children))
     children <- setNames(children, sapply(children, function(x) attr(x, 'node')))
   nms <- names(children)
@@ -12,7 +6,7 @@ path_elem <- function(node = NULL, children = NULL, ...){
   path.elem <- structure(list(), class = "path_elem")
   attr(path.elem, 'node') <- node 
   for(i in seq_along(children)){path.elem[[nms[[i]]]] <- children[[i]]}
-  path.elem['.'] <- node
+  path.elem[['.']] <- node
   return(path.elem)
 }
 
@@ -35,7 +29,6 @@ print.path_elem <- function(x, ...){
     elem.to.be.removed <- grepl("`.*`", splitted.path)
     splitted.path[elem.to.be.removed] <- substr(splitted.path[elem.to.be.removed], 2,
                                                 nchar(splitted.path[elem.to.be.removed]))
-    
     splitted.path <- c(splitted.path, b)
     
     fun <- function(x, y){
@@ -51,37 +44,37 @@ print.path_elem <- function(x, ...){
   }
 }
 
-cnf <- config::get(config = 'default', file = 'conf.yml')
-
-file.section <- cnf$kFiles
-
-dir_structure <- function(config.file.section, root.key = 'kRoot'){
-  print(length(config.file.section))
-  if(length(config.file.section) > 1){
-    node <- config.file.section[[root.key]]
-    children <- config.file.section[which(names(config.file.section) != root.key)]
-    path_elem(node, sapply(children, dir_structure))
+dir_structure <- function(file.section, root.key = 'kRoot'){
+  # browser()
+  if(length(file.section) > 1){
+    node <- file.section[[root.key]]
+    children <- file.section[which(names(file.section) != root.key)]
+    # path_elem(node, Map(function (x) dir_structure(x, root.key = root.key, 
+    #                                                extension = extension), 
+    #                     children))
+    path_elem(node, Map(dir_structure, children))
   } else {
-    path_elem(node = config.file.section[1])
+    # node <- file.section[[1]]
+    # node <- if(!is.null(extension)) paste0(node, extension) else node
+    path_elem(node = file.section[[1]])
   }
 }
 
+cnf <- config::get(config = 'default', file = 'conf.yml')
+file.section <- cnf$kFiles
 cnfs <- dir_structure(file.section)
 
-cnfs$kNestedData$kFile3..
+cnfs$kNestedData$kLastFolder$kUltimateFile
 
+cnfs$kNestedData$kLastFolder$kLastR
+cnfs$kNestedData$kFile3
 
-file.section <- cnf$kFiles
-
-file.section
-
-
+# sapply(list('a', 'b', 'c'), function(x) path_elem(node = x)) -> a
+# Map(function(x) path_elem(node = x), list('a', 'b', 'c'))
 # a1 <- path_elem("fileA.RData")
 # a2 <- path_elem("fileB.RData")
 # a3 <- path_elem("data", list(A1 = a1, A2 = a2))
 # a4 <- path_elem("files", list(a3))
-# 
+
 # a4$data$A1
 # a4$data$.
-
-

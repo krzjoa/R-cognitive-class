@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector antidiagonal(NumericMatrix x){
-  int nrow = x.nrow();
+  int nrow = x.nrow();  
   int ncol = x.ncol();
   NumericVector num_vec (nrow);
   for(int i=0; i<nrow; i++){

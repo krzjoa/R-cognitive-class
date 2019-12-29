@@ -1,6 +1,7 @@
 library(R6)
 library(matricks)
 
+
 grid_world <- R6Class(
   classname = 'grid_world',
   
@@ -79,66 +80,156 @@ grid_world <- R6Class(
 )
 
 
-
-
-
-gw <- grid_world$new(6, 5, c(1, 1))
-
-#' @name matrix_set
-#' @title Set multiple values useing one function call 
-#' @description 
-#' This functions allows to set multiple elements of a matrix 
-#' instead of using annoying step-by-step assignment by
-#' mat[1,2] <- 2
-#' mat[2,3] <- 0.5 
-#' etc.
-#' @aliases s
-#' @examples 
-#' mat <- matrix(0, 4, 5)
-#' matrix_set(mat, .(1,1) ~ 5, .(3, 4) ~ 0.3)
-matrix_set <- function(matrix, ...){
-  exprs <- list(...)
+standard_grid <- function(){
+  gw <- grid_world$new(6, 5, c(1, 1))
   
-  is.formula <- sapply(exprs, function(x) inherits(x, 'formula'))
+  # Actions
+  m(T, T, T, F, T|
+    T, T, F, T, T|
+    F, T, T, T, F|
+    T, T, T, T, T|
+    F, F, T, T, T|
+    F, T, T, T, F) -> actions
   
-  if(!all(is.formula))
-    stop(paste0("Following arguments are not formulae: ", exprs[!is.formula]))
+  rewards <- matrix(0, 6, 5)
   
-  for(expr in exprs){
-    args <- strsplit(as.character(expr), "~", fixed = TRUE)
-    args <- args[args != ""]
-    lh <- eval(parse(text = args[[1]]))
-    rh <- as.numeric(args[[2]])
-    matrix[lh[1], lh[2]] <- rh
-  }
-  matrix
+  set_values(rewards, 
+             c(4, 4) ~ -1,
+             c(5, 3) ~ 1) -> rewards
+  
+  gw$set(rewards = rewards,
+         actions = actions)
+  
+  gw
 }
 
-matrix_set(rewards, 
-           c(1, 1) ~ 2,
-           c(2, 3) ~ 0.5, 
-           c(4, 4) ~ 200)
+negative_grid <- function(step.cost = -0.1){
+  gw <- standard_grid()
+  rewards <- gw$rewards
+  rewards[rewards == 0] <- step.cost
+  gw$rewards <- rewards
+  gw
+}
+
+# gw <- negative_grid()
+# 
+# gw$move('R')
+# 
+# 
+# gw$is_action_possible('R')
 
 
-# Actions
-m(T, T, T, F, T|
-  T, T, F, T, T|
-  F, T, T, T, F|
-  T, T, T, T, T|
-  F, F, T, T, T|
-  F, T, T, T, F) -> actions
+conv.threshold <- 10e-4
 
-rewards <- matrix(0, 6, 5)
-rewards[5, 5] <- 1
-rewards[4, 1] <- -1 
+#' @name matrix_idx
+#' @title Return all the matrix/data.frame indices
+#' @param x matrix or data.frame
+#' @param mask logical matrix
+#' @return list of two-element vectors, where values describe (x, y) position respecitively
+#' @example 
+#' mat <- matrix(0, 3, 3)
+#' matrix_idx(mat)
+matrix_idx <- function(x, mask = NULL){
+  n.col <- ncol(x)
+  n.row <- nrow(x)
+  out <- expand.grid(1:n.col, 1:n.row)
+  
+  # browser()
+  
+  out2 <- asplit(out, 1)
+  out2 <- Map(as.vector, out2)
+  
+  if (is.matrix(mask)){
+    out3 <- matrix(out2, nrow = n.row, ncol = n.col)
+    return(out3[mask])
+  } else {
+    return(out2)
+  }
+}
 
-gw$set(rewards = rewards,
-       actions = actions)
+#' @name neighbour_idx
+#' @title Get all indices in neighbourhood 
+#' @param mat matrix or data.frame
+#' @param idx two-element vector
+#' @param mask logical matrix; optional
+#' @param diagonal include diagonal neighbours
+#' @param include.idx include current index
+#' @example 
+#' mat <- matrix(0, 3, 3)
+#' neighbour_idx(mat, c(1, 2))
+#' neighbour_idx(mat, c(1, 2), diagonal = FALSE)
+#' neighbour_idx(mat, c(1, 2), diagonal = FALSE, include.idx = TRUE)
+#' # With mask
+#' mat <- matrix(0, 3, 4)
+#' mask <- m(F, F, T, T | F, F, F, F | T, T, F, T)
+#' neighbour_idx(mat, c(1, 2), mask = mask)
+neighbour_idx <- function(mat, idx, mask = NULL, diagonal = TRUE, include.idx = FALSE){
+  n.row <- nrow(mat)
+  n.col <- ncol(mat)
+  nidx <- NULL
+  min.row <- max(1, idx[1]-1)
+  max.row <- min(n.row, idx[1] + 1)
+  min.col <- max(1, idx[2] - 1)
+  max.col <- min(n.col, idx[2] + 1)
+  
+  for (i in min.row:max.row) {
+    for (j in min.col:max.col) {
+      
+      if (!include.idx & idx[1] == i & idx[2] == j)
+        next
+      
+      if (!diagonal & (abs(idx[1]-i) + abs(idx[2] - j)) == 2)
+        next
+      
+      if (!is.null(mask)) {
+        if (mask[i, j])
+          nidx <- c(nidx, list(c(i, j)))
+      } else {
+        nidx <- c(nidx, list(c(i, j)))
+      }
+    }
+  }
+  nidx
+}
 
-gw$move('R')
 
 
-gw$is_action_possible('R')
-
+main <- function(){
+  grid <- standard_grid()
+  
+  V <- matrix(0, nrow = grid$height, ncol = grid$width)
+  gamma <- 1.0 # discount factor
+  states <- matrix_idx(grid$actions, grid$actions)
+  mask <- grid$actions & (grid$rewards == 0)
+  # non.terminal.states <- matrix_idx(grid$actions, )
+  
+  while (TRUE) {
+    biggest.change <- 0
+    
+    for (s in states){
+      old.v <- V[s[1], s[2]]
+      
+      # V(s) only has value if `s` it's not a terminal state
+      possible.transitions <- neighbour_idx(grid$actions, 
+                                            idx = s, mask = mask, 
+                                            diagonal = FALSE)
+      for (ns in non.terminal.states){
+        
+        new.v <- 0
+        p.a <- 1.0 / length(possible.transitions)
+        
+        
+        
+        
+      }
+      
+    }
+        
+    
+  }
+  
+  
+}
+  
 
 
