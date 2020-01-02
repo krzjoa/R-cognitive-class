@@ -11,7 +11,6 @@ x
 
 enable_autotyping <- function(){
   `<-` <- function(x, value){
-    
   }
 }
 
