@@ -20,3 +20,5 @@ autocast(data.frame = data.table,
 
 casted(data.table)(x) <- data.frame(lol = c(1,2,3))
 autocasted(x) <- data.frame(lol = c(1,2,3))
+
+col_typed(x, lol = integer) <- data.frame(lol = c(1,2,3)) 
