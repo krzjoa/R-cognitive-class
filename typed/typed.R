@@ -14,3 +14,9 @@ enable_autotyping <- function(){
     
   }
 }
+
+autocast(data.frame = data.table,
+         double     = integer)
+
+casted(data.table)(x) <- data.frame(lol = c(1,2,3))
+autocasted(x) <- data.frame(lol = c(1,2,3))
