@@ -65,7 +65,7 @@ iterative_policy_evaluation <- function(epsilon = 1e-4, gamma = 1){
           r <- at(grid$rewards, a)
           new.v <- new.v + p.a * (r + gamma * at(V, a))
         }
-        
+          
         at(V, s) <- new.v
         biggest.change <- max(biggest.change, abs(old.v - at(V, s)))
       }
