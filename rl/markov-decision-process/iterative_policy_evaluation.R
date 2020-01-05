@@ -37,7 +37,7 @@ matrix_idx <- function(x, n.row = NULL, n.col = NULL, mask = NULL){
 }
 
 #' @name iterative_policy_evaluation
-iterative_policy_evaluation <- function(epsilon = 1e-4, gamma = 1){
+iterative_policy_evaluation1 <- function(epsilon = 1e-4, gamma = 1){
   grid <- negative_grid()
   states <- matrix_idx(grid$actions, 
                        grid$actions)
