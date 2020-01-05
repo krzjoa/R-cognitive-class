@@ -1,0 +1,16 @@
+default:
+  kFiles:   
+    kRoot: 'base'
+    kFile1: "trolo.csv"
+    kFile2: 'lolo.csv'
+    kNestedData:
+      kRoot: 'nested'
+      kFile3: 'haha.xls'
+      kLastFolder:
+        kRoot: 'last'
+        kUltimateFile: 'ultimate.R'
+        kLastR: 'last.R'
+        
+production:
+  cores: !expr getOption("mc.cores")
+  debug: !expr Sys.getenv("ENABLE_DEBUG") == "1"
