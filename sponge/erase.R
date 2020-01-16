@@ -6,3 +6,6 @@ erase_functions <- function(pattern = NULL, envir = NULL){
   object.list <- as.vector(unlist(object.list))
   rm(list = object.list, envir = envir)
 }
+                     
+ is_rstudio_data <-                     
+                     
