@@ -1,4 +1,4 @@
-path_elem <- function(node = NULL, children = NULL){
+      path_elem <- function(node = NULL, children = NULL){
   if(is.null(names(children)) & !is.null(children))
     children <- setNames(children, sapply(children, function(x) attr(x, 'node')))
   nms <- names(children)
@@ -91,3 +91,10 @@ cnfs$kNestedData$kFile3
 
 # a4$data$A1
 # a4$data$.
+
+
+are <- function(char){
+  function(...) Reduce("&", Map(function (x) inherits(x, char), list(...)), TRUE)
+}
+
+!are('matrix')(matrix(0, 3, 3), m(1:3 | 4:6))
