@@ -4,38 +4,7 @@ library(zeallot)
 library(matricks)
 
 # Wnioski: może chodzi o inicjalizację?
-
-# epsilon <- 10e-4
-# gamma <- 0.9
-#' @name iterative_policy_evaluation
-# iterative_policy_evaluation <- function(grid, states, possible.actions, 
-#                                          V, P, epsilon = 1e-4, gamma = 0.9){
-#   
-#   while (TRUE) {
-#     biggest.change <- 0
-#     
-#     for (s in states) {
-#       old.v <- at(V, s)
-#       
-#       
-#       if (!is.null(at(P, s)[[1]])) {
-#         a <- at(P, s)[[1]]
-#         r <- at(grid$rewards, a)
-#         at(V, s) <- r + gamma * at(V, a)
-#         biggest.change <- max(biggest.change, abs(old.v - at(V, s)))
-#       }
-#     }
-#     # print("\n")
-#     # print(V)
-#     # print("\n")
-#     
-#     if (biggest.change < epsilon)
-#       break
-#   }
-#   
-#   list(V, P)
-# }
-
+  
 evaluate_policy <- function(actions, rewards, policy, 
                             epsilon = 1e-3, gamma = 0.9){
   

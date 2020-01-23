@@ -3,7 +3,6 @@ source("markov-decision-process/idx.R")
 library(zeallot)
 library(matricks)
 
-
 quasi_possible <- function(idx){
   list(U = c(idx[1] + 1, idx[2]),
        D = c(idx[1] - 1, idx[2]),
@@ -11,20 +10,25 @@ quasi_possible <- function(idx){
        L = c(idx[1], idx[2] - 1))
 }
 
-
 evaluate_policy <- function(actions, rewards, policy, possible.actions,
                             epsilon = 1e-3, gamma = 0.9){
   
   V <-  with_same_dims(actions, 0) 
   V[possible.actions] <- runif(sum(possible.actions))
+  
+  print(V)
 
   while (TRUE) {
+    
     biggest.change <- 0
     
-    for (move in seq_matrix(actions)) {
-
-      s <- move[[1]] # Action, value at index s
-      possible <- move[[2]]
+    for (place in seq_matrix(actions)) {
+      
+      # Action, value at index s
+      s <- place[[1]] 
+      possible <- place[[2]]
+      
+      # print(s)
       
       old.v <- at(V, s)
       # New v value if computed by iterating over possibilities
@@ -34,7 +38,8 @@ evaluate_policy <- function(actions, rewards, policy, possible.actions,
         next
       
       for (pa in quasi_possible(s)){
-        if (at(policy, s) == pa)
+        
+        if (all(at(policy, s)[[1]] == pa))
           p <- 0.5
         else
           p <- 0.5 / 3
@@ -42,11 +47,14 @@ evaluate_policy <- function(actions, rewards, policy, possible.actions,
         if (!is_idx_possible(actions, pa))
           next
         
-        if (at(actions, pa))
+        if (!at(actions, pa))
           next
         
-        r <- at(rewards, a)
-        new.v <- new.v + p* (r + gamma * at(V, pa))
+        #print(pa)
+        #print(paste0(p, " ", r, " ", at(V, pa)))
+        
+        r <- at(rewards, pa)
+        new.v <- new.v + p * (r + gamma * at(V, pa))
       }
       at(V, s) <- new.v
       biggest.change <- max(biggest.change, abs(old.v - at(V, s)))
@@ -80,49 +88,58 @@ policy_iteration <- function(gamma = 0.9){
     
     V <- evaluate_policy(actions = grid$actions,
                          rewards = grid$rewards,
-                         policy = P,
+                         policy  = P,
                          possible.actions = possible.actions)
     
     is.policy.converged <- TRUE
     
-    for (move in seq_matrix(grid$actions)) {
-      s <- move[[1]] # Action, value at index s
-      val <- move[[2]]
-      
-      # print(c("Place:", s))
-      
+    for (place in seq_matrix(grid$actions)) {
+      s <- place[[1]] # Action, value at index s
+      val <- place[[2]]
+
       if(!val)
         next
       
-      if (!is.null(at(P, s)[[1]])) {
-        old.a <- at(P, s)[[1]]
-        new.a <- NULL
-        best.value <- -Inf
+      if (is.null(at(P, s)[[1]]))
+        next
+ 
+      old.a <- at(P, s)[[1]]
+      new.a <- NULL
+      best.value <- -Inf
+      
+      possible.transitions <- neighbour_idx(possible.actions, 
+                                            idx = s,
+                                            mask = grid$actions,
+                                            diagonal = FALSE)
+      
+      for (a in possible.transitions) {
         
-        possible.transitions <- neighbour_idx(possible.actions, 
-                                              idx = s,
-                                              mask = grid$actions,
-                                              diagonal = FALSE)
+        v <- 0
         
-        for (a in possible.transitions) {
+        for (a2 in quasi_possible(s)){
+          if (all(a == a2))
+            p <- 0.5
+          else
+            p <- 0.5 / 3
           r <- at(grid$rewards, a)
-          v <- r + gamma * at(V, a)
-          
-          #print(c(a, r, at(V, a)))
-          #print(paste0("Best value ", best.value, " ", v))
-          
-          # browser()
-          
-          if (v > best.value) {
-            best.value <- v
-            new.a <- a
-          }
+          v <- v + p * (r + gamma * at(V, a))
         }
         
-        at(P, s) <- list(new.a)
-        if (any(new.a != old.a))
-          is.policy.converged <- FALSE
+        #print(c(a, r, at(V, a)))
+        #print(paste0("Best value ", best.value, " ", v))
+        
+        # browser()
+        
+        if (v > best.value) {
+          best.value <- v
+          new.a <- a
+        }
       }
+      
+      at(P, s) <- list(new.a)
+      if (any(new.a != old.a))
+        is.policy.converged <- FALSE
+      
     }
     
     if (is.policy.converged)
@@ -143,3 +160,5 @@ policy_iteration <- function(gamma = 0.9){
 
 
 policy_iteration()
+
+pryr::object_size()
