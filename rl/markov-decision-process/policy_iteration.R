@@ -53,11 +53,6 @@ policy_iteration <- function(gamma = 0.9){
   V <-  with_same_dims(grid$actions, 0) 
   V[possible.actions] <- runif(sum(possible.actions))
   
-  # Initalize policy  
-  # Policy should describe actions, i.e: left, right itp.
-  # elems <- c('U', 'D', 'R', 'L')
-
-  
   P <- with_same_dims(grid$actions, NA) 
   # P[possible.actions] <- sample(elems, sum(possible.actions), replace = TRUE)
   
