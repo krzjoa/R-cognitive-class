@@ -98,3 +98,9 @@ are <- function(char){
 }
 
 !are('matrix')(matrix(0, 3, 3), m(1:3 | 4:6))
+                                
+                                
+ # To matricks package
+square_matrix <- function(x, round.method = floor){
+  matrix(x, nrow = round.method(sqrt(length(x))))
+}                       
