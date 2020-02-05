@@ -116,4 +116,8 @@ value_iteration <- function(gamma = 0.9){
 }
 
 value_iteration()
+
+?gam::gam()
+
+
     

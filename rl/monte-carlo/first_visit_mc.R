@@ -4,11 +4,11 @@ source("markov-decision-process/grid_world.R")
 source("markov-decision-process/idx.R")
 library(zeallot)
 library(matricks)
-
-runif_same_dims <- function(mat, min = 0, max = 1){
-  data <- runif(length(mat), min = min, max = max)
-  matrix(data = data, nrow = nrow(mat), ncol = ncol(mat))
-}
+  
+  runif_same_dims <- function(mat, min = 0, max = 1){
+    data <- runif(length(mat), min = min, max = max)
+    matrix(data = data, nrow = nrow(mat), ncol = ncol(mat))
+  }
 
 first_visit_mc <- function(P, N){
   # Random initialization
@@ -123,8 +123,5 @@ trollo <- function(matrix, min, max){
   browser()
   
 }
-trollo(1,2,3)
 
 
-
-sponge::erase_masking_objects()
