@@ -1,0 +1,41 @@
+---
+title: "Experiment"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+install.packages("fastrtext")
+```
+
+## Loading pre-trained model
+
+Let's download a pre-trained model.
+https://fasttext.cc/docs/en/english-vectors.html
+
+```{r cars}
+library(fastrtext)
+library(magrittr)
+path <- "/home/krzysztof/Pulpit/Data/wiki-news-300d-1M.bin"
+model <- load_model(path)
+# https://pommedeterresautee.github.io/fastrtext/reference/index.html 
+readLines(path, n = 2)[2] %>% strsplit(" ") -> splitted
+splitted[[1]][-1] %>% as.numeric() %>% length()
+# https://www.r-bloggers.com/read-line-by-line-of-a-file-in-r/
+
+# Przestrzeń 300 wymiarowa
+# Indeksowanie wektorów, odczyt on-demand
+
+# paczka crudo  
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
