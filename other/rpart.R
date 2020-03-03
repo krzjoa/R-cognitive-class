@@ -1,0 +1,4 @@
+
+fit <- rpart()
+
+View(kyphosis)

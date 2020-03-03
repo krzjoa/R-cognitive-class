@@ -1,43 +1,13 @@
 # Main object to store all the session objects
-dl.session <- new.env()
-
-# Config
-dl.config <- list(device = 'default')
-class(dl.config) <- 'dl_config'
-dl.session$dl.config <- dl.config
+#' @useDynLib dl add_
+#' @export
+add_c <- function(x, y) .Call(add_, x, y)
 
 
-identify_system <- function(){
-  sys.info <- as.list(Sys.info())
-  sys.info$sysname
-}
+library(data.table)
 
-#' @title Show devices available to run DL
-#' @name show_devices
-#' @description Aim of this function is to show full list of devices, that
-#' may be used to run functions from this package
-show_devices <- function(){
-  
-  devices <- data.frame()
-  
-  # Get available CPUs
-  if(identify_system() == 'Linux'){
-    identifiers <- paste0('CPU', system('cat /proc/cpuinfo | grep processor', intern = TRUE))
-    model.names <- system('cat /proc/cpuinfo | grep "model name"', intern = TRUE)
-    devices <- rbind(devices, list(model.name = model.names, id = identifiers))
-  }
-  
-  # Get available GPUs 
-  # Not implemented yet
-  
-  
-}
-
-
-# Building Rcpp
-Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
-# Sys.setenv("PKG_CXXFLAGS"="-I/opt/arrayfire/include/")
-Sys.setenv("PKG_CPPFLAGS"="-I/opt/arrayfire/include/")
-# Sys.setenv("PKG_LIBS"="-L/opt/arrayfire/lib64 -laf")
-Sys.setenv("PKG_LIBS"="-L/opt/arrayfire/lib64/ -laf")
-
+dt <- as.data.table(cars)
+dt2 <- dt
+dt$speed <- dt$speed + 100
+dt
+dt2

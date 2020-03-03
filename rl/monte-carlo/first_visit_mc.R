@@ -4,41 +4,19 @@ source("markov-decision-process/grid_world.R")
 source("markov-decision-process/idx.R")
 library(zeallot)
 library(matricks)
-  
-  runif_same_dims <- function(mat, min = 0, max = 1){
+
+runif_same_dims <- function(mat, min = 0, max = 1){
     data <- runif(length(mat), min = min, max = max)
     matrix(data = data, nrow = nrow(mat), ncol = ncol(mat))
-  }
-
-first_visit_mc <- function(P, N){
-  # Random initialization
-  V <- runif_same_dims(P)
-  V[is.null(P)] <- NULL
-  
-  
-  # Sample mean
-  # * nie trzeba za każdym razem liczyć średniej od nowa
-  # * dla problemów niestacjonarnych można liczyć średnią ruchomą
-  # * cnetralne twierdzenie graniczne
-  # * vaiance estimate = variance of RV / N (RV = andom variable)
-  all.returns <- list()
-  
-  for(episode in 1:N){
-    c(states, returns) %<-% play_episode()
-    
-    for (idx in 1:length(states)){
-      s <- states[[idx]]
-      g <- returns[[idx]]
-      
-      if (!(s %in% names(all.returns))){
-        all.returns[[s]] <- c(all.returns[[s]], g)
-        # TODO: sample_mean
-        at(V, s) <- sample_mean(all.returns[[s]])
-      }
-    }
-  }
-  return(V)
 }
+  
+# First unique value
+first_unique <- function(tuple.list){
+  first.elem <- purrr::map(tuple.list, ~ .x[[1]])
+  first.uniques <- !duplicated(first.elem)
+  tuple.list[first.uniques]
+}
+
 
 #' Calculating returns from rewards
 #' Tutaj mam macierz nagód określoną z góry
@@ -48,14 +26,13 @@ first_visit_mc <- function(P, N){
 #' @return states & returns
 play_game <- function(actions, rewards, P, possible.actions, gamma = 0.9){
   
+  # TODO: states.rewads - mieszam typy, raz macierz, raz lista
   max.iter <- length(P)
   
   #' We choose random start state
-  set.seed(runif(1))
   start.state <- sample(matricks::matrix_idx(P, mask = possible.actions), 1)[[1]]
-  states.and.rewards <- with_same_dims(P, list(NULL))
-  at(states.and.rewards, start.state) <- 0
-  
+  states.and.rewards <- list(list(start.state, 0)) #with_same_dims(P, list(NULL))
+  # at(states.and.rewards, start.state) <- 0
   
   s <- start.state
   is.game.over <- FALSE
@@ -66,7 +43,7 @@ play_game <- function(actions, rewards, P, possible.actions, gamma = 0.9){
     
     counter <- counter + 1 
     
-    print(s)
+    # print(s)
     
     a <- at(P, s)[[1]]
     
@@ -94,6 +71,10 @@ play_game <- function(actions, rewards, P, possible.actions, gamma = 0.9){
   first <- TRUE
   
   for (sr in rev(states.and.rewards)){
+    # print("Hey")
+    # print(sr)
+    c(s, r) %<-% sr
+    # print(s)
     if (first)
       first <- FALSE
     else
@@ -103,25 +84,47 @@ play_game <- function(actions, rewards, P, possible.actions, gamma = 0.9){
   return(states.and.returns)  
 }
 
-grid <- get_grid()
-possible.actions <- grid$actions & (grid$rewards == -0.1)
 
-P <- neighbour_idx_matrix(mat = P, 
+run_first_mc <- function(P, iter = 100){
+  grid <- get_grid()
+  possible.actions <- grid$actions & (grid$rewards == -0.1)
+
+  V <- with_same_dims(P, 0)
+  
+  # Already seen states
+  seen.states <- with_same_dims(P, FALSE)
+  returns     <- with_same_dims(P, list(NULL))
+  
+  # Sample mean
+  # * nie trzeba za każdym razem liczyć średniej od nowa
+  # * dla problemów niestacjonarnych można liczyć średnią ruchomą
+  # * cnetralne twierdzenie graniczne
+  # * vaiance estimate = variance of RV / N (RV = andom variable)
+  for (i in 1:iter) {
+    res <- play_game(actions = grid$actions,
+                     rewards = grid$rewards,
+                     possible.actions = possible.actions,
+                     P = P)
+    
+    for (i in 1:length(res)) {
+      c(s, G) %<-% res[[i]]
+      if (!at(seen.states, s)){
+        at(returns, s)[[1]] <- c(at(returns, s), list(G))
+        at(V, s) <- mean(unlist(at(returns, s)[[1]]))
+        at(seen.states, s) <- TRUE
+      }
+    }
+  }
+  print(possible.actions)
+  print(V)
+  print(as.data.frame(P))
+}
+
+set.seed(9)
+
+P <- neighbour_idx_matrix(mat = possible.actions, 
                           mask = possible.actions, 
                           diagonal = FALSE, 
                           random.select = 1)
-
-res <- play_game(actions = grid$actions,
-          rewards = grid$rewards,
-          possible.actions = possible.actions,
-          P = P)
-  
-
-
-
-trollo <- function(matrix, min, max){
-  browser()
-  
-}
-
+run_first_mc(P, 100)
 
