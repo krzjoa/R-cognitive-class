@@ -1,0 +1,9 @@
+SUCCESS [2020-03-17 23:27:50] It works!
+SUCCESS [2020-03-17 23:28:54] It works!
+SUCCESS [2020-03-17 23:28:56] It works!
+SUCCESS [2020-03-17 23:30:13] It works!
+DEBUG   [2020-03-17 23:30:14] Trollo-lollo!
+DEBUG   [2020-03-17 23:30:15] Trollo-lollo!
+SUCCESS [2020-03-17 23:30:30] It works!
+SUCCESS [2020-03-17 23:30:31] It works!
+DEBUG   [2020-03-17 23:30:32] Trollo-lollo!

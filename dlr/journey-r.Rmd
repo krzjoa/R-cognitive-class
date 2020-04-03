@@ -1,0 +1,100 @@
+---
+title: "Journey to the Interior of the R"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### `PROTECT`
+* Musimy wywołać PROTECT, który chroni obiekt przed byciem usuniętym przez R-owy odśmiecacz.
+(ang. garbage collector). 
+* Więcej: https://github.com/hadley/r-internals/blob/master/gc-rc.md
+
+Rodzaje:
+* PROTECT
+* PROTECT_WITH_INDEX
+
+
+```{C}
+SEXP a = 1;
+
+# See: http://adv-r.had.co.nz/C-interface.html
+```
+
+
+## Tworzenie zewnętrznych wskaźników
+
+Przydatne źródła:
+* http://homepage.divms.uiowa.edu/~luke/R/simpleref.html
+* http://www.hep.by/gnu/r-patched/r-exts/R-exts_122.html
+* https://stackoverflow.com/questions/7032617/storing-c-objects-in-r/7035138
+
+> Uwaga: funckja nie nazywa się R_MakeExternalPointer! R_MakeExternalPtr 
+
+### Przykład
+Zwracanie zewnętrznego wskaźnika na obiekt. Końcowy typ to zawsze SEXP.
+```{C}
+static void _graph_finalizer(SEXP ext)
+{
+  struct Graph *ptr = (struct Graph*) R_ExternalPtrAddr(ext);
+  Free(ptr); 
+}
+
+# Free to funckja dostarczana przez R
+
+SEXP test(){
+  // create the graph given in above fugure
+  int V = 5;
+  struct ComputationalGraph* graph = create_graph(V);
+  add_edge(graph, 0, 1);
+  add_edge(graph, 0, 4);
+  add_edge(graph, 1, 2);
+  add_edge(graph, 1, 3);
+  add_edge(graph, 1, 4);
+  add_edge(graph, 2, 3);
+  add_edge(graph, 3, 4);
+
+  // print the adjacency list representation of the above graph
+  printGraph(graph);
+
+  SEXP ptr_graph = PROTECT(R_MakeExternalPtr(graph, R_NilValue, R_NilValue));
+  R_RegisterCFinalizerEx(ptr_graph, _graph_finalizer, TRUE);
+  UNPROTECT(1);
+
+  return ptr_graph;
+}
+
+
+```
+
+
+# Kiedy wywoaływać UNPROTECT?
+Może się wydawać dziwne, że wywołujemy UNPROTECT przed returnem, skoro dalej chcemy chronić obiekt.
+Z tego:
+https://developer.r-project.org/Blog/public/2019/04/18/common-protect-errors/
+wynika jednak, że GC jest wywoływany przy każdej nowej alokacji obiektu w R.
+Stąd też, fragment
+
+```C
+  UNPROTECT(1);
+
+  return ptr_graph;
+```
+
+Nie powoduje usunięcia ptr_graph. Co innego w przypadku, gdy mamy coś takiego
+
+```C
+PROTECT(myint = NEW_INTEGER(len));
+p_myint = INTEGER_POINTER(myint);
+for(int i=0;i<n;i++) p_myint[i] = sigma_0[i];
+UNPROTECT(2);
+PutRNGstate();
+return myint;
+
+```
+
+
+
+

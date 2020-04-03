@@ -1,0 +1,26 @@
+{
+  "R": {
+    "Version": "3.6.1",
+    "Repositories": [
+      {
+        "Name": "CRAN",
+        "URL": "https://cran.rstudio.com"
+      }
+    ]
+  },
+  "Packages": {
+    "dlr": {
+      "Package": "dlr",
+      "Version": "0.0.0.9000",
+      "Source": "unknown",
+      "Hash": "9394c56c324fdd23e33e57d51215d63f"
+    },
+    "renv": {
+      "Package": "renv",
+      "Version": "0.9.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c1a367437d8a8a44bec4b9d4974cb20c"
+    }
+  }
+}
