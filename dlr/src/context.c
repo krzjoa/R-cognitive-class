@@ -8,10 +8,10 @@
 // http://www.mathcs.emory.edu/~cheung/Courses/255/Syllabus/2-C-adv-data/dyn-array.html
 // https://www.geeksforgeeks.org/graph-and-its-representations/
 // https://cran.r-project.org/doc/manuals/R-exts.html#Garbage-Collection
+// https://www.programiz.com/dsa/graph-adjacency-list
 
 
 //
-
 
 // Structures to handle computational graph
 // TODO:
@@ -45,7 +45,7 @@ void _Ops_finalizer(SEXP ext){
 }
 
 
-//' ================================== Ops ================================ //
+//' ================================== Gaph ================================ //
 
 
 // How to remove this structure???
@@ -56,7 +56,7 @@ struct OperationStack{
 
 struct Graph{
   int V;
-  struct OperationStack* ops_stack;
+  struct Ops** ops_stack;
 };
 
 static void _graph_finalizer(SEXP ext)

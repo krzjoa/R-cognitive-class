@@ -1,3 +1,3 @@
 #' @keywords internal
-#' @useDynLib dlr, .registration = TRUE
+  #' @useDynLib dlr, .registration = TRUE
 "_PACKAGE"
