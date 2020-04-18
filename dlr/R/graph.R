@@ -1,30 +1,24 @@
 # Helper functions to create computational graph
 
-#' @name .create_graph
+#' @name .create_context
 #' @title Create graph to track computations
 #' @return external pointer (EXPTREXP)
-#' @useDynLib dlr create_graph
+#' @useDynLib dlr create_DlrContext
 #' @export
-.create_graph <- function(){
-  graph <- .Call(create_graph, 5)
-  class(graph) <- "dlr_graph"
+.create_context <- function(){
+  graph <- .Call(create_DlrContext)
+  class(graph) <- "dlr_context"
   graph
 }
 
-#' @name .add_edge
-#' @title Add node to computational graph
-#' @useDynLib dlr add_edge
-#' @details Works inplace
+#' @name .create_ops
+#' @title Add a node
+#' @useDynLib dlr add_node
 #' @export
-.add_edge <- function(graph, start, end){
-  .Call(add_edge, graph, start, end)
+.create_ops <- function(ctx, val){
+  .Call(add_node, ctx, val)
 }
 
-#' @useDynLib dlr print_graph
-#' @export
-.print_graph <- function(graph){
-  .C(print_graph, graph)
-}
 
 #' @useDynLib dlr graph_vertices
 #' @export
@@ -37,6 +31,19 @@ get_graph <- function(){
   getOption("dlr.graph")
 }
 
-
+#' @name .show_graph
+#' @title Show graph
+#' @useDynLib dlr print_DlrContext
+#' @examples
+#' library(dlr)
+#' ctx <- get_graph()
+#' .add_node(ctx, 13)
+#' .add_node(ctx, 20)
+#' .add_node(ctx, 777)
+#' .add_node(ctx, 45)
+#' .nodes(ctx)
+#' .show_graph(ctx)
+#' @export
+.show_graph <- function(gph) .Call(print_DlrContext, gph)
 
 
