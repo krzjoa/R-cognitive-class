@@ -2,10 +2,10 @@
 % Please edit documentation in R/tensor.R
 \name{cpu_tensor}
 \alias{cpu_tensor}
-\title{tensor class constructor}
+\title{CPU tensor}
 \usage{
 cpu_tensor(data, dims, requires.grad = FALSE)
 }
 \description{
-tensor class constructor
+cpu_tensor class constructor
 }

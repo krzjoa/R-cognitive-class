@@ -1,0 +1,36 @@
+---
+title: 'eponge: Keep Your Environment Clean'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<a href="https://krzjoa.github.io/matricks"><img src='https://raw.githubusercontent.com/krzjoa/eponge/master/man/figures/logo.png' align="right" height="139" style="height:139px;" /></a>
+
+`eponge` is a small package, which facilitates selective object removal. 
+It was released on [CRAN](https://cran.r-project.org/web/packages/eponge/index.html) at 23th March 2020. Initially, the package was named `sponge`, but during first submission trial I found out, that currently there exists the [SPONGE](https://www.bioconductor.org/packages/release/bioc/html/SPONGE.html) package, availbale on BioConductor. Because of that, I decided to rename my package, changing only one letter. The package was given a new name: `eponge`, which simply means *sponge* in [French](https://en.wiktionary.org/wiki/%C3%A9ponge). Let me present, what the package was created for.
+
+## Removing objects by name
+Typically, when we want to remove all objects from the **global environment**, we can use click the broom icon in RStudio (supposing we use this IDE - but in most cases, we do).
+Alternatively, we can obtain the same results combining `rm` with `ls`.
+
+```{r rm.example}
+# Remove all the objects
+rm(list = ls())
+# Remove object with 'iris' in its name
+rm(list = ls(pattern = "iris"))
+```
+
+`eponge` offers a an equivalent shortcut: `erase` function. It's particularly handy when we want to select some set of objects using regex pattern.
+
+```{r eponge.erase.all}
+# Remove all the objects
+eponge::erase() 
+# Remove object with 'iris' in its name
+eponge::erase("iris")
+```
+
+## Removing objects by type
+

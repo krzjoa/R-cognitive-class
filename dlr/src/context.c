@@ -71,10 +71,9 @@ void _Ops_finalizer(SEXP ext){
 }
 
 // This function should neve be called outside of the context
-struct Ops* create_Ops(SEXP node_no, SEXP R_ops){
-  int number = asInteger(node_no);
+struct Ops* create_Ops(int node_no, SEXP R_ops){
   struct Ops* ops = (struct Ops*) calloc(1, sizeof(struct Ops));
-  ops->number = number;
+  ops->number = node_no;
   ops->R_ops = R_ops;
   return ops;
 }
@@ -136,19 +135,18 @@ SEXP create_DlrContext(){
 
 
 // Create an operation and add it to the context
-SEXP create_ops_in_context(SEXP DlrContext_ptr, SEXP value, SEXP R_ops){
+SEXP create_ops_in_context(SEXP DlrContext_ptr, SEXP R_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
+  context->V++;
+  int val = context->V;
   // New Ops
-  int src = asInteger(value);
-  struct Ops *new_ops = create_Ops(value, R_ops);
+  struct Ops *new_ops = create_Ops(val, R_ops);
   // New link
   struct Link *new_link = create_Link(new_ops, NULL);
   if (!context->head)
     context->head = new_link;
   else
     last_link(context->head)->next = new_link;
-  context->V++;
-
   // Transform into the ExternalPointer
   SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(new_ops, R_NilValue, R_NilValue));
   R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);

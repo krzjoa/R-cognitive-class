@@ -5,8 +5,8 @@
 #' @param dims dimensions
 #' @param requires.grad is gradient required; logical
 #' @examples
-#' x   <- tensor(1:30, c(3, 10))
-#' tsr <- tensor(1:20, c(2, 10))
+#' library(dlr)
+#' x   <- cpu_tensor(1:30, c(3, 10))
 NULL
 
 # TODO: create abstraction class??
@@ -14,34 +14,32 @@ NULL
 #' tensor class definition
 .cpu_tensor <- setClass("cpu_tensor",
    representation(
-     data     = "numeric",
+     data     = "array",
      dims     = "numeric",
-     grad     = "numeric",
-     backward = "function",
-     forward  = "function"
+     grad     = "array"
 ))
 
-#' tensor class constructor
+#' cpu_tensor class constructor
+#' @name cpu_tensor
+#' @title CPU tensor
+#' @export
 cpu_tensor <- function(data, dims, requires.grad = FALSE){
 
-  grad <- if (requires.grad) array(0, dim = dims) else NA_real_
+  data <- array(data = data, dim = dims)
+  grad <- array(0, dim = dims)
+  # grad <- if (requires.grad) array(0, dim = dims) else array(NULL)
 
-  .cpu_tensor(data = data,
-              dims = dims,
-              grad = grad)
+  tensor <- .cpu_tensor(data = data,
+                        dims = dims,
+                        grad = grad)
+  ctx <- get_context()
+  .create_ops(ctx, tensor)
+  tensor
 }
 
-#' cpu tensor
-
-#' Remark: .Call have to return SEXP, while .C doesn't
-
-# Main object to store all the session objects
-#' #' @useDynLib dlr test
-#' #' @export
-#' graph <- function() .Call(test)
 
 
-# library(dlr)
-# gph <- graph()
-# nodes(gph)
+
+
+
 

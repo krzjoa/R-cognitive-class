@@ -14,6 +14,6 @@
 Tensor abstraction, an interface for CPU and CUDA tensors.
 }
 \examples{
-x   <- tensor(1:30, c(3, 10))
-tsr <- tensor(1:20, c(2, 10))
+library(dlr)
+x   <- cpu_tensor(1:30, c(3, 10))
 }
