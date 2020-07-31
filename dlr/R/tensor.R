@@ -33,7 +33,7 @@ cpu_tensor <- function(data, dims, requires.grad = FALSE){
                         dims = dims,
                         grad = grad)
   ctx <- get_context()
-  .create_ops(ctx, tensor)
+  register_ops(ctx, tensor)
   tensor
 }
 

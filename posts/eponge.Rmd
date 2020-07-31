@@ -1,6 +1,8 @@
 ---
-title: 'eponge: Keep Your Environment Clean'
-output: html_document
+    title: 'eponge: Keep Your Environment Clean'
+output:
+  md_document:
+    variant: markdown_github    
 ---
 
 ```{r setup, include=FALSE}
@@ -34,3 +36,33 @@ eponge::erase("iris")
 
 ## Removing objects by type
 
+`epnoge` becomes even more useful, when we want to precisely remove a tiny subset of objects. Normally, we would use a combination of `ls`, `get` and `rm` functions. If we don't want to recreate such code from scratch, `eponge` do it for us:
+
+```{r eponge.remove.by.type}
+# Erasing by type
+eponge::erase_if(is.character)
+# We can use a regex pattern to identify the objects we want
+eponge::erase_functions("prepare_")
+# We can clean whole section in RStudio Envitonment tab
+# Remove all the objects named in RStudio as "Data"
+eponge::erase_data()
+# Remove all the "Values" in RStidio
+eponge::erase_values()
+```
+
+## Removing masking objects
+
+As we know, homonime objects mask each other. If we want to get rid of such objects from our environment, the most convenient way to do that is `eponge`'s `erase_masking_*` function family.
+At the moment, it embraces two functions:
+
+* `erase_masking`
+* `erase_masking_functions`
+
+```{r eponge.erase.masking}
+log <- function(x) print(paste0("Logging:", x))
+cars <- data.frame(idx   = 1:10,
+                   speed = runif(10, 30, 50))
+eponge::erase_masking()
+```
+
+`eponge` allows you to keep your R environments clean in easy way. Try it yourself!

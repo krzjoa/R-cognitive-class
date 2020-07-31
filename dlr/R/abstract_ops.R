@@ -58,5 +58,3 @@
 #           function(x, y) tensor(x@data ** y))
 
 
-
-
