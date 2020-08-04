@@ -11,6 +11,13 @@
   ctx
 }
 
+#' @name get_context
+#' @title Get computation graph
+#' @export
+get_context <- function(){
+  getOption("dlr.context")
+}
+
 #' @name register_ops
 #' @title Create an operation inside the context.
 #' It may be a tensor or a function
@@ -20,36 +27,30 @@ register_ops <- function(ctx, r.ops){
   .Call(create_ops_in_context, ctx, r.ops)
 }
 
-
 #' @useDynLib dlr graph_vertices
 #' @export
-.nodes <- function(gph) .Call(graph_vertices, gph)
-
-#' @name get_context
-#' @title Get computation graph
-#' @export
-get_context <- function(){
-  getOption("dlr.context")
-}
+.nodes <- function(ctx = get_context()) .Call(graph_vertices, ctx)
 
 #' @name .show_graph
 #' @title Show graph
 #' @useDynLib dlr print_DlrContext
 #' @export
-.show_graph <- function(gph) .Call(print_DlrContext, gph)
+.show_graph <- function(ctx = get_context()) .Call(print_DlrContext, ctx)
 
 #' @name .get_r_ops
-#' @title Show graph
+#' @title Get R operations
 #' @useDynLib dlr get_r_ops
 #' @export
 .get_r_ops <- function(ctx, number) .Call(get_r_ops, ctx, number)
+
+#' Function for getting artificial number of the operation
 
 #' @name .add_node_inputs
 #' @title Add node inputs
 #' @useDynLib dlr add_inputs
 #' @export
 .add_node_inputs <- function(ctx, number, nodes){
-  .Call(add_inputs, ctx, number, as.integer(nodes))
+  .Call(add_inputs, ctx, number, nodes)
 }
 
 #' @name .get_linked_nodes

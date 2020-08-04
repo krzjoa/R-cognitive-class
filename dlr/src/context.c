@@ -95,6 +95,11 @@ int _get_n_inputs(struct Ops* ops){
   return i;
 }
 
+int _get_ops_number(SEXP ops_ptr){
+  CAST_PTR(ptr, Ops, ext);
+  return ptr->number;
+}
+
 // Free all the virtual objects from the inputs and their inputs
 // It can be real object only
 void free_chain(struct Ops* ops){
@@ -137,6 +142,7 @@ SEXP create_DlrContext(){
 // Create an operation and add it to the context
 SEXP create_ops_in_context(SEXP DlrContext_ptr, SEXP R_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
+  // Registered Ops numbers look strange
   context->V++;
   int val = context->V;
   // New Ops

@@ -16,7 +16,8 @@ NULL
    representation(
      data     = "array",
      dims     = "numeric",
-     grad     = "array"
+     grad     = "array",
+     pointer  = "externalptr"
 ))
 
 #' cpu_tensor class constructor
@@ -29,11 +30,14 @@ cpu_tensor <- function(data, dims, requires.grad = FALSE){
   grad <- array(0, dim = dims)
   # grad <- if (requires.grad) array(0, dim = dims) else array(NULL)
 
+  # TODO: remove xptr lib use
   tensor <- .cpu_tensor(data = data,
                         dims = dims,
-                        grad = grad)
+                        grad = grad,
+                        pointer = xptr::null_xptr())
   ctx <- get_context()
-  register_ops(ctx, tensor)
+  ptr <- register_ops(ctx, tensor)
+  tensor@pointer <- ptr
   tensor
 }
 
