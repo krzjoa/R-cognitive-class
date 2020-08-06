@@ -23,6 +23,9 @@
 //' next: pointer to adjacent ops
 //' use one convention with pointers
 //' Divide into 3 files
+//'
+//' Incrementation:
+//' https://stackoverflow.com/questions/8208021/how-to-increment-a-pointer-address-and-pointers-value?rq=1
 
 //' ================================ Link  ===============================  //
 //' Link is a simple structure, which contains pointer to a Ops instance
@@ -95,9 +98,9 @@ int _get_n_inputs(struct Ops* ops){
   return i;
 }
 
-int _get_ops_number(SEXP ops_ptr){
-  CAST_PTR(ptr, Ops, ext);
-  return ptr->number;
+SEXP C_get_ops_number(SEXP ops_ptr){
+  CAST_PTR(ptr, Ops, ops_ptr);
+  return ScalarInteger(ptr->number);
 }
 
 // Free all the virtual objects from the inputs and their inputs
@@ -127,7 +130,7 @@ static void _DlrContext_finalizer(SEXP ext)
   // TODO: free all the children?
 }
 
-SEXP create_DlrContext(){
+SEXP C_create_context(){
   struct DlrContext* context = (struct DlrContext*) malloc(sizeof(struct DlrContext));
   context->V = 0;
   context->head = NULL;
@@ -138,12 +141,13 @@ SEXP create_DlrContext(){
 }
 
 
-
 // Create an operation and add it to the context
-SEXP create_ops_in_context(SEXP DlrContext_ptr, SEXP R_ops){
+SEXP C_register_ops(SEXP DlrContext_ptr, SEXP R_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   // Registered Ops numbers look strange
+  printf("Before: %d", context->V);
   context->V++;
+  printf("After: %d", context->V);
   int val = context->V;
   // New Ops
   struct Ops *new_ops = create_Ops(val, R_ops);
@@ -153,6 +157,7 @@ SEXP create_ops_in_context(SEXP DlrContext_ptr, SEXP R_ops){
     context->head = new_link;
   else
     last_link(context->head)->next = new_link;
+
   // Transform into the ExternalPointer
   SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(new_ops, R_NilValue, R_NilValue));
   R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
@@ -161,7 +166,7 @@ SEXP create_ops_in_context(SEXP DlrContext_ptr, SEXP R_ops){
   return new_ops_ptr;
 }
 
-SEXP get_r_ops(SEXP DlrContext_ptr, SEXP number){
+SEXP C_get_r_ops(SEXP DlrContext_ptr, SEXP number){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   int int_number = asInteger(number);
   struct Link *current_link = context->head;
@@ -186,12 +191,12 @@ struct Ops* get_ops(SEXP DlrContext_ptr, SEXP number){
   return NULL;
 }
 
-SEXP graph_vertices(SEXP DlrContext_ptr){
+SEXP C_n_nodes(SEXP DlrContext_ptr){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   return ScalarInteger(context->V);
 }
 
-SEXP print_DlrContext(SEXP DlrContext_ptr){
+SEXP C_show_graph(SEXP DlrContext_ptr){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   struct Link *current_link = context->head;
   // This operation can be transformed into iter_links (?)
@@ -203,10 +208,11 @@ SEXP print_DlrContext(SEXP DlrContext_ptr){
 }
 
 
-SEXP add_inputs(SEXP DlrContext_ptr, SEXP node_number, SEXP inputs_numbers){
+SEXP C_add_inputs(SEXP DlrContext_ptr, SEXP node_ptr, SEXP inputs_numbers){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
+  CAST_PTR(ops, Ops, node_ptr);
   struct Link* current_link = context->head;
-  struct Ops* ops = get_ops(DlrContext_ptr, node_number);
+  //struct Ops* ops = get_ops(DlrContext_ptr, node_number);
 
   // For each number
   int* int_inputs_numbers = INTEGER(inputs_numbers);
@@ -225,7 +231,7 @@ SEXP add_inputs(SEXP DlrContext_ptr, SEXP node_number, SEXP inputs_numbers){
   return R_NilValue;
 }
 
-SEXP get_node_inputs(SEXP DlrContext_ptr, SEXP node_number){
+SEXP C_get_linked_nodes(SEXP DlrContext_ptr, SEXP node_number){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   struct Ops* ops = get_ops(DlrContext_ptr, node_number);
   int n_linked_ops = _get_n_inputs(ops);

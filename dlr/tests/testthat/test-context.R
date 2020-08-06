@@ -3,10 +3,10 @@ test_that("Create context", {
   expect_true(inherits(ctx, "dlr_context"))
 })
 
-test_that("Create Ops and Compare", {
+test_that("Register operations", {
    ctx <- .create_context()
-  # .create_ops(ctx, 13, dplyr::mutate)
-  # .create_ops(ctx, 20, cars)
-  # .create_ops(ctx, 45, data.frame)
-  # expect_equal(.get_r_ops(ctx, 45), data.frame)
+   dplyr.ptr <- register_ops(ctx, dplyr::mutate)
+   cars.ptr  <- register_ops(ctx, cars)
+   df.ptr    <- register_ops(ctx, data.frame)
+   nodes <- 
 })

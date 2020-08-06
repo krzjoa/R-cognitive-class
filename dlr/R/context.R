@@ -1,63 +1,71 @@
 # Helper functions to create context, which handles computational graph
+#' TODO: one convention for corresponding C and  function names
 
-#' @name .create_context
+#' @name create_context
 #' @title Create graph to track computations
 #' @return external pointer (EXPTREXP)
-#' @useDynLib dlr create_DlrContext
+#' @useDynLib dlr C_create_context
 #' @export
-.create_context <- function(){
-  ctx <- .Call(create_DlrContext)
+create_context <- function(){
+  ctx <- .Call(C_create_context)
   class(ctx) <- "dlr_context"
   ctx
 }
 
 #' @name get_context
-#' @title Get computation graph
+#' @title Get default dlr context
 #' @export
 get_context <- function(){
   getOption("dlr.context")
 }
 
+#' @name show_graph
+#' @title Show context as a graph
+#' @param ctx dlr_context
+#' @useDynLib dlr C_show_graph
+#' @export
+show_graph <- function(ctx = get_context()) .Call(C_show_graph, ctx)
+
+#' @name get_ops_number
+#' @title Get operation number
+#' @useDynLib dlr C_get_ops_number
+get_ops_number <- function(ptr) .Call(C_get_ops_number, ptr)
+
+#' @name get_r_ops
+#' @title Get R operations
+#' @useDynLib dlr C_get_r_ops
+#' @export
+get_r_ops <- function(ctx, number) .Call(get_r_ops, ctx, number)
+
 #' @name register_ops
 #' @title Create an operation inside the context.
 #' It may be a tensor or a function
-#' @useDynLib dlr create_ops_in_context
+#' @useDynLib dlr C_register_ops
 #' @export
 register_ops <- function(ctx, r.ops){
-  .Call(create_ops_in_context, ctx, r.ops)
+  .Call(C_register_ops, ctx, r.ops)
 }
 
-#' @useDynLib dlr graph_vertices
+#' @useDynLib dlr C_n_nodes
 #' @export
-.nodes <- function(ctx = get_context()) .Call(graph_vertices, ctx)
-
-#' @name .show_graph
-#' @title Show graph
-#' @useDynLib dlr print_DlrContext
-#' @export
-.show_graph <- function(ctx = get_context()) .Call(print_DlrContext, ctx)
-
-#' @name .get_r_ops
-#' @title Get R operations
-#' @useDynLib dlr get_r_ops
-#' @export
-.get_r_ops <- function(ctx, number) .Call(get_r_ops, ctx, number)
+n_nodes <- function(ctx = get_context()) .Call(C_n_nodes, ctx)
 
 #' Function for getting artificial number of the operation
 
-#' @name .add_node_inputs
+#' @name add_inputs
 #' @title Add node inputs
-#' @useDynLib dlr add_inputs
+#' @useDynLib dlr C_add_inputs
 #' @export
-.add_node_inputs <- function(ctx, number, nodes){
-  .Call(add_inputs, ctx, number, nodes)
+add_inputs <- function(ctx, ptr, nodes){
+  .Call(C_add_inputs, ctx, .get_ops_number(ptr), nodes)
 }
 
-#' @name .get_linked_nodes
-#' @title Show graph
-#' @useDynLib dlr get_node_inputs
+#' @name get_linked_nodes
+#' @title Get list of linked nodes
+#' @useDynLib dlr C_get_linked_nodes
 #' @export
-.get_linked_nodes <- function(ctx, number) .Call(get_node_inputs, ctx, number)
+get_linked_nodes <- function(ctx, number) .Call(C_get_linked_nodes, ctx, number)
+
 
 #' @examples
 #' library(dlr)
