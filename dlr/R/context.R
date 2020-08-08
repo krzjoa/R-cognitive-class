@@ -1,12 +1,12 @@
 # Helper functions to create context, which handles computational graph
 #' TODO: one convention for corresponding C and  function names
 
-#' @name create_context
+#' @name .create_context
 #' @title Create graph to track computations
 #' @return external pointer (EXPTREXP)
 #' @useDynLib dlr C_create_context
 #' @export
-create_context <- function(){
+.create_context <- function(){
   ctx <- .Call(C_create_context)
   class(ctx) <- "dlr_context"
   ctx
@@ -54,10 +54,10 @@ n_nodes <- function(ctx = get_context()) .Call(C_n_nodes, ctx)
 
 #' @name add_inputs
 #' @title Add node inputs
-#' @useDynLib dlr C_add_inputs
+#' @useDynLib dlr C_add_input
 #' @export
-add_inputs <- function(ctx, ptr, nodes){
-  .Call(C_add_inputs, ctx, .get_ops_number(ptr), nodes)
+add_input <- function(ops, input){
+  .Call(C_add_input, ops, input)
 }
 
 #' @name get_linked_nodes

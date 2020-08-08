@@ -140,14 +140,14 @@ SEXP C_create_context(){
   return ptr_graph;
 }
 
-
 // Create an operation and add it to the context
+// TODO: remove debugging
 SEXP C_register_ops(SEXP DlrContext_ptr, SEXP R_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   // Registered Ops numbers look strange
-  printf("Before: %d", context->V);
+  // printf("Before: %d", context->V);
   context->V++;
-  printf("After: %d", context->V);
+  // printf("After: %d", context->V);
   int val = context->V;
   // New Ops
   struct Ops *new_ops = create_Ops(val, R_ops);
@@ -178,7 +178,6 @@ SEXP C_get_r_ops(SEXP DlrContext_ptr, SEXP number){
   return R_NilValue;
 }
 
-
 struct Ops* get_ops(SEXP DlrContext_ptr, SEXP number){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   int int_number = asInteger(number);
@@ -207,32 +206,36 @@ SEXP C_show_graph(SEXP DlrContext_ptr){
   return R_NilValue;
 }
 
-
-SEXP C_add_inputs(SEXP DlrContext_ptr, SEXP node_ptr, SEXP inputs_numbers){
-  CAST_PTR(context, DlrContext, DlrContext_ptr);
-  CAST_PTR(ops, Ops, node_ptr);
-  struct Link* current_link = context->head;
+//SEXP C_add_inputs(SEXP DlrContext_ptr, SEXP node_ptr, SEXP inputs_numbers){
+//  CAST_PTR(context, DlrContext, DlrContext_ptr);
+//  CAST_PTR(ops, Ops, node_ptr);
+//  struct Link* current_link = context->head;
   //struct Ops* ops = get_ops(DlrContext_ptr, node_number);
-
   // For each number
-  int* int_inputs_numbers = INTEGER(inputs_numbers);
-  int size = length(inputs_numbers);
+//  int* int_inputs_numbers = INTEGER(inputs_numbers);
+//  int size = length(inputs_numbers);
+//  while(current_link){
+//    for(int i = 0; i < size; i++){
+//      if (current_link->contained->number == int_inputs_numbers[i]){
+//       struct Ops* added_ops = get_ops(DlrContext_ptr, ScalarInteger(int_inputs_numbers[i]));
+//       add_input_Ops(ops, added_ops);
+//      }
+//    }
+//    current_link = current_link->next;
+//  }
+//  return R_NilValue;
+//}
 
-  while(current_link){
-    for(int i = 0; i < size; i++){
-      if (current_link->contained->number == int_inputs_numbers[i]){
-       struct Ops* added_ops = get_ops(DlrContext_ptr, ScalarInteger(int_inputs_numbers[i]));
-       add_input_Ops(ops, added_ops);
-      }
-    }
-    current_link = current_link->next;
-  }
-
+SEXP C_add_input(SEXP node_ptr, SEXP input_ptr){
+  //CAST_PTR(context, DlrContext, DlrContext_ptr);
+  CAST_PTR(ops, Ops, node_ptr);
+  CAST_PTR(ops_input, Ops, input_ptr);
+  add_input_Ops(ops, ops_input);
   return R_NilValue;
 }
 
 SEXP C_get_linked_nodes(SEXP DlrContext_ptr, SEXP node_number){
-  CAST_PTR(context, DlrContext, DlrContext_ptr);
+  //CAST_PTR(context, DlrContext, DlrContext_ptr);
   struct Ops* ops = get_ops(DlrContext_ptr, node_number);
   int n_linked_ops = _get_n_inputs(ops);
 
