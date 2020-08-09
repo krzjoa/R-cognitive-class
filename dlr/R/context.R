@@ -1,5 +1,7 @@
 # Helper functions to create context, which handles computational graph
 #' TODO: one convention for corresponding C and  function names
+#' TODO: check, if all the operations still exists
+#' Thera are several potential solutions of this problem
 
 #' @name .create_context
 #' @title Create graph to track computations
@@ -42,9 +44,23 @@ get_r_ops <- function(ctx, number) .Call(get_r_ops, ctx, number)
 #' It may be a tensor or a function
 #' @useDynLib dlr C_register_ops
 #' @export
-register_ops <- function(ctx, r.ops){
+register_ops <- function(ctx, r.ops, paired.ops = NULL){
   .Call(C_register_ops, ctx, r.ops)
 }
+
+#' @name get_paired_ops
+#' @title Get paired operatin such as function derivative
+#' @useDynLib dlr C_get_paired_ops
+#' @export
+get_paired_ops <- function(ops.ptr){
+  .Call(C_get_paired_ops, ops.ptr)
+}
+
+#' @name reassign_ops
+#' @title Workaround for the copy-on-modify case
+# reassign_ops <- function(ops){
+#
+# }
 
 #' @useDynLib dlr C_n_nodes
 #' @export

@@ -60,6 +60,7 @@ struct Ops{
   int number;
   struct DlrContext *context; // To clean whole the chain, if the real object is removed from R env
   SEXP R_ops; // R object. It may be a vector or function. If NULL, object is vitual
+  SEXP R_paired_ops; // Paired Ops, such as function derivative
   struct Link *wrapper_in_context; // Pointer to the Link object, which wraps the curent Ops in the DlrContext
   struct Link *inputs_header;
   struct Link *outputs_header;
@@ -74,10 +75,11 @@ void _Ops_finalizer(SEXP ext){
 }
 
 // This function should neve be called outside of the context
-struct Ops* create_Ops(int node_no, SEXP R_ops){
+struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops){
   struct Ops* ops = (struct Ops*) calloc(1, sizeof(struct Ops));
   ops->number = node_no;
   ops->R_ops = R_ops;
+  ops->R_paired_ops = R_paired_ops;
   return ops;
 }
 
@@ -86,6 +88,13 @@ void add_input_Ops(struct Ops* ops, struct Ops* input_ops){
     ops->inputs_header = create_Link(input_ops, NULL);
   else
     ops->inputs_header->next = create_Link(input_ops, NULL);
+}
+
+void add_output_Ops(struct Ops* ops, struct Ops* output_ops){
+  if(!ops->outputs_header)
+    ops->outputs_header = create_Link(output_ops, NULL);
+  else
+    ops->outputs_header->next = create_Link(output_ops, NULL);
 }
 
 int _get_n_inputs(struct Ops* ops){
@@ -101,6 +110,11 @@ int _get_n_inputs(struct Ops* ops){
 SEXP C_get_ops_number(SEXP ops_ptr){
   CAST_PTR(ptr, Ops, ops_ptr);
   return ScalarInteger(ptr->number);
+}
+
+SEXP C_get_paired_ops(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+  return ops->R_paired_ops;
 }
 
 // Free all the virtual objects from the inputs and their inputs
@@ -142,15 +156,12 @@ SEXP C_create_context(){
 
 // Create an operation and add it to the context
 // TODO: remove debugging
-SEXP C_register_ops(SEXP DlrContext_ptr, SEXP R_ops){
+SEXP C_register_ops(SEXP DlrContext_ptr, SEXP R_ops, SEXP R_paired_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
-  // Registered Ops numbers look strange
-  // printf("Before: %d", context->V);
   context->V++;
-  // printf("After: %d", context->V);
   int val = context->V;
   // New Ops
-  struct Ops *new_ops = create_Ops(val, R_ops);
+  struct Ops *new_ops = create_Ops(val, R_ops, R_paired_ops);
   // New link
   struct Link *new_link = create_Link(new_ops, NULL);
   if (!context->head)
@@ -227,10 +238,16 @@ SEXP C_show_graph(SEXP DlrContext_ptr){
 //}
 
 SEXP C_add_input(SEXP node_ptr, SEXP input_ptr){
-  //CAST_PTR(context, DlrContext, DlrContext_ptr);
   CAST_PTR(ops, Ops, node_ptr);
   CAST_PTR(ops_input, Ops, input_ptr);
   add_input_Ops(ops, ops_input);
+  return R_NilValue;
+}
+
+SEXP C_add_output(SEXP node_ptr, SEXP output_ptr){
+  CAST_PTR(ops, Ops, node_ptr);
+  CAST_PTR(ops_output, Ops, output_ptr);
+  add_output_Ops(ops, ops_output);
   return R_NilValue;
 }
 
