@@ -97,9 +97,8 @@ void add_output_Ops(struct Ops* ops, struct Ops* output_ops){
     ops->outputs_header->next = create_Link(output_ops, NULL);
 }
 
-int _get_n_inputs(struct Ops* ops){
+int _get_n_elems(struct Link* current_link){
   int i = 0;
-  struct Link* current_link = ops->inputs_header;
   while(current_link){
     i++;
     current_link = current_link->next;
@@ -251,10 +250,13 @@ SEXP C_add_output(SEXP node_ptr, SEXP output_ptr){
   return R_NilValue;
 }
 
-SEXP C_get_linked_nodes(SEXP DlrContext_ptr, SEXP node_number){
-  //CAST_PTR(context, DlrContext, DlrContext_ptr);
-  struct Ops* ops = get_ops(DlrContext_ptr, node_number);
-  int n_linked_ops = _get_n_inputs(ops);
+SEXP C_get_inputs(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+
+  if (!ops->inputs_header)
+    return R_NilValue;
+
+  int n_linked_ops = _get_n_elems(ops->inputs_header);
 
   //http://adv-r.had.co.nz/C-interface.html#c-vectors
   int* pout;
@@ -270,5 +272,30 @@ SEXP C_get_linked_nodes(SEXP DlrContext_ptr, SEXP node_number){
     current_link = current_link->next;
   }
 
+  return out;
+}
+
+
+SEXP C_get_outputs(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+
+  if (!ops->outputs_header)
+    return R_NilValue;
+
+  int n_linked_ops = _get_n_elems(ops->outputs_header);
+
+  //http://adv-r.had.co.nz/C-interface.html#c-vectors
+  int* pout;
+  SEXP out = PROTECT(allocVector(INTSXP, n_linked_ops));
+  pout = INTEGER(out);
+
+  int i = 0;
+  struct Link* current_link = ops->outputs_header;
+  // This operation can be transformed into iter_links (?)
+  while(current_link){
+    pout[i] = current_link->contained->number;
+    i++;
+    current_link = current_link->next;
+  }
   return out;
 }
