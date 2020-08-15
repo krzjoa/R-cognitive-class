@@ -12,6 +12,10 @@
 // https://www.programiz.com/dsa/graph-adjacency-list
 // https://www.sanfoundry.com/c-tutorials-mutually-dependent-structures/
 
+// https://homepage.divms.uiowa.edu/~luke/R/simpleref.html
+// https://marlin-na.github.io/r-api/pairlists/
+// https://wiki.r-consortium.org/view/Native_API_stats_of_Rinternals.h_without_USE_R_INTERNALS
+
 // Structures to handle computational graph
 // TODO:
 //' * add node finalizers
@@ -30,7 +34,6 @@
 //' ================================ Link  ===============================  //
 //' Link is a simple structure, which contains pointer to a Ops instance
 //' as well as next and previous object
-//' TODO: add finalizer
 
 struct Link{
   struct Ops *contained;
@@ -41,10 +44,10 @@ void _Link_finalizer(struct Link *link){
   free(link); // ???
 }
 
-struct Link* create_Link(struct Ops *contained_ops, struct Link *next_ops){
+struct Link* create_Link(struct Ops *contained_ops, struct Link *next_link){
   struct Link* l = (struct Link*) calloc(1, sizeof(struct Link));
   l->contained = contained_ops;
-  l->next = next_ops;
+  l->next = next_link;
   return l;
 }
 
@@ -157,7 +160,8 @@ SEXP C_create_context(){
 // TODO: remove debugging
 SEXP C_register_ops(SEXP DlrContext_ptr, SEXP R_ops, SEXP R_paired_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
-  context->V++;
+  // Increment ops counter
+  (context)->V++;
   int val = context->V;
   // New Ops
   struct Ops *new_ops = create_Ops(val, R_ops, R_paired_ops);
@@ -205,6 +209,53 @@ SEXP C_n_nodes(SEXP DlrContext_ptr){
   return ScalarInteger(context->V);
 }
 
+SEXP C_get_all_ops(SEXP DlrContext_ptr){
+  CAST_PTR(context, DlrContext, DlrContext_ptr);
+
+  if (!context->head)
+    return R_NilValue;
+
+  SEXP out = PROTECT(allocVector(INTSXP, context->V));
+
+  struct Link *current_link = context->head;
+  int current_index = 0;
+
+  while(current_link){
+    INTEGER(out)[current_index] = current_link->contained->number;
+    current_link = current_link->next;
+    current_index++;
+  }
+
+  UNPROTECT(1);
+  return out;
+}
+
+
+SEXP C_get_all_ops_ptr(SEXP DlrContext_ptr){
+  CAST_PTR(context, DlrContext, DlrContext_ptr);
+
+  if (!context->head)
+    return R_NilValue;
+
+  SEXP out = PROTECT(allocVector(VECSXP, context->V));
+
+  struct Link *current_link = context->head;
+  int current_index = 0;
+
+  while(current_link){
+    SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(current_link, R_NilValue, R_NilValue));
+    R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
+    SET_VECTOR_ELT(out, current_index, new_ops_ptr);
+    current_link = current_link->next;
+    current_index++;
+  }
+
+  UNPROTECT((context->V) + 1);
+  return out;
+}
+
+
+
 SEXP C_show_graph(SEXP DlrContext_ptr){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   struct Link *current_link = context->head;
@@ -215,26 +266,6 @@ SEXP C_show_graph(SEXP DlrContext_ptr){
   }
   return R_NilValue;
 }
-
-//SEXP C_add_inputs(SEXP DlrContext_ptr, SEXP node_ptr, SEXP inputs_numbers){
-//  CAST_PTR(context, DlrContext, DlrContext_ptr);
-//  CAST_PTR(ops, Ops, node_ptr);
-//  struct Link* current_link = context->head;
-  //struct Ops* ops = get_ops(DlrContext_ptr, node_number);
-  // For each number
-//  int* int_inputs_numbers = INTEGER(inputs_numbers);
-//  int size = length(inputs_numbers);
-//  while(current_link){
-//    for(int i = 0; i < size; i++){
-//      if (current_link->contained->number == int_inputs_numbers[i]){
-//       struct Ops* added_ops = get_ops(DlrContext_ptr, ScalarInteger(int_inputs_numbers[i]));
-//       add_input_Ops(ops, added_ops);
-//      }
-//    }
-//    current_link = current_link->next;
-//  }
-//  return R_NilValue;
-//}
 
 SEXP C_add_input(SEXP node_ptr, SEXP input_ptr){
   CAST_PTR(ops, Ops, node_ptr);
@@ -272,9 +303,24 @@ SEXP C_get_inputs(SEXP ops_ptr){
     current_link = current_link->next;
   }
 
+  UNPROTECT(1);
+
   return out;
 }
 
+SEXP C_get_input_ptr(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+
+  if (!ops->inputs_header)
+    return R_NilValue;
+
+ // Transform into the ExternalPointer
+ SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(ops->inputs_header->contained, R_NilValue, R_NilValue));
+ R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
+ UNPROTECT(1);
+
+ return new_ops_ptr;
+}
 
 SEXP C_get_outputs(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);

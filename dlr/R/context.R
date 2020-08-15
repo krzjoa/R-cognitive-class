@@ -21,11 +21,28 @@ get_context <- function(){
   getOption("dlr.context")
 }
 
+#' @name get_all_ops
+#' @title Get all ops in context
+#' @useDynLib dlr C_get_all_ops
+#' @export
+get_all_ops <- function(ctx){
+  .Call(C_get_all_ops, ctx)
+}
+
+#' @name get_all_ops_ptr
+#' @title Get all ops in context
+#' @useDynLib dlr C_get_all_ops_ptr
+#' @export
+get_all_ops_ptr <- function(ctx){
+  .Call(C_get_all_ops_ptr, ctx)
+}
+
+
+#' TODO: prints incorrect numbers
 #' @name show_graph
 #' @title Show context as a graph
 #' @param ctx dlr_context
 #' @useDynLib dlr C_show_graph
-#' @export
 show_graph <- function(ctx = get_context()) .Call(C_show_graph, ctx)
 
 #' @name get_ops_number
@@ -38,7 +55,7 @@ get_ops_number <- function(ptr) .Call(C_get_ops_number, ptr)
 #' @title Get R operations
 #' @useDynLib dlr C_get_r_ops
 #' @export
-get_r_ops <- function(ctx, number) .Call(get_r_ops, ctx, number)
+get_r_ops <- function(ctx, number) .Call(C_get_r_ops, ctx, number)
 
 #' @name register_ops
 #' @title Create an operation inside the context.
@@ -98,6 +115,12 @@ add_output <- function(ops, output){
 #' @export
 get_inputs <- function(ops_ptr) .Call(C_get_inputs, ops_ptr)
 
+#' @name get_input_ptr
+#' @title Get operation inputs
+#' @useDynLib dlr C_get_input_ptr
+#' @export
+get_input_ptr <- function(ops_ptr) .Call(C_get_input_ptr, ops_ptr)
+
 #' @name get_outputs
 #' @title Get operation outputs
 #' @useDynLib dlr C_get_outputs
@@ -106,14 +129,30 @@ get_outputs <- function(ops_ptr) .Call(C_get_outputs, ops_ptr)
 
 #' @examples
 #' library(dlr)
-#' ctx <- get_graph()
-#' .create_ops(ctx, 13, dplyr::mutate)
-#' .create_ops(ctx, 20, cars)
-#' .create_ops(ctx, 45, data.frame)
-#' .nodes(ctx)
-#' .show_graph(ctx)
-#' .get_r_ops(ctx, 45)
-#' .get_r_ops(ctx, 77)
+#' ctx <- get_context()
+#' register_ops(ctx, dplyr::mutate)
+#' register_ops(ctx, cars)
+#' register_ops(ctx, data.frame)
+#'
+#' # Arithmetic operations
+#' x <- cpu_tensor(5, dims = 1)
+#' y <- x ** 3
+#'
+#' # Show context
+#' n_nodes()
+#' get_all_ops(get_context())
+#' all.ops <- get_all_ops_ptr(get_context())
+#'
+#' get_r_ops(get_context(), 1)
+#' get_r_ops(get_context(), 6)
+#'
 #' # Adding links to nodes
 #' .add_node_inputs(ctx, 13, as.integer(c(20, 45)))
 #' .get_linked_nodes(ctx, 13)
+#'
+
+#'
+#' # Not working! :get_inputs(x)
+#' y
+# backward(y)
+
