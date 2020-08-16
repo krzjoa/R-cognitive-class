@@ -37,14 +37,6 @@ get_all_ops_ptr <- function(ctx){
   .Call(C_get_all_ops_ptr, ctx)
 }
 
-
-#' TODO: prints incorrect numbers
-#' @name show_graph
-#' @title Show context as a graph
-#' @param ctx dlr_context
-#' @useDynLib dlr C_show_graph
-show_graph <- function(ctx = get_context()) .Call(C_show_graph, ctx)
-
 #' @name get_ops_number
 #' @title Get operation number
 #' @useDynLib dlr C_get_ops_number
