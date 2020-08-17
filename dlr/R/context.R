@@ -14,6 +14,29 @@
   ctx
 }
 
+#' TODO: context enironment should keep exact pointers to all the dlr objects
+#' For example, if we create in global
+#' x <- tensor(1:100, c(2, 50))
+#' We create pointer to this object, which should prevent object removal.
+#' We should do exactly the same in the case of local variables
+#' However, there are still two main problems to solve:
+#' * how to handle object assignmnet (like this y <- x)
+#' * duplicated funs in the environmnet: we don't need hundreads copies of power function etc.
+#' Possible solution: duplicated register: object register vs ops register (?)
+#' See: http://adv-r.had.co.nz/Environments.html
+create_context_env <- function(){
+  ctx.env <- new.env()
+  ctx.env$V <- 0
+  return(ctx.env)
+}
+
+#' Add in-place ops
+add_to_env <- function(env, ops){
+  ctx.env$V <- ctx.env$V + 1
+  ctx[[as.character(ctx.env$V )]] <- ops
+}
+
+
 #' @name get_context
 #' @title Get default dlr context
 #' @export
@@ -135,8 +158,8 @@ get_outputs <- function(ops_ptr) .Call(C_get_outputs, ops_ptr)
 #' get_all_ops(get_context())
 #' all.ops <- get_all_ops_ptr(get_context())
 #'
-#' get_r_ops(get_context(), 1)
-#' get_r_ops(get_context(), 6)
+#' get_r_ops(get_context(), 4)
+#' get_r_ops(get_context(), 7)
 #'
 #' # Adding links to nodes
 #' .add_node_inputs(ctx, 13, as.integer(c(20, 45)))

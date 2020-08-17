@@ -1,5 +1,8 @@
 #include "context.h"
 
+
+// Transform to OpsContainer or something like that;
+// DlrContext transform to environment
 struct DlrContext;
 
 static void _DlrContext_finalizer(SEXP ext)
