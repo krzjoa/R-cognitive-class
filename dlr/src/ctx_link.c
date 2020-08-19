@@ -24,3 +24,13 @@ struct Link* last_link(struct Link *current_link){
   }
   return current_link;
 }
+
+//' TODO: rename
+int _get_n_elems(struct Link* current_link){
+  int i = 0;
+  while(current_link){
+    i++;
+    current_link = current_link->next;
+  }
+  return i;
+}

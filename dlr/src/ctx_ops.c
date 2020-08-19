@@ -7,7 +7,6 @@ void _Ops_finalizer(SEXP ext){
   CAST_PTR(ops, Ops, ext);
   // If real object, remove whole chain
   // free_chain()
-
   // Temporary!!!!
   // Free(ops);
 }
@@ -35,15 +34,6 @@ void add_output_Ops(struct Ops* ops, struct Ops* output_ops){
     ops->outputs_header->next = create_Link(output_ops, NULL);
 }
 
-int _get_n_elems(struct Link* current_link){
-  int i = 0;
-  while(current_link){
-    i++;
-    current_link = current_link->next;
-  }
-  return i;
-}
-
 SEXP C_get_ops_number(SEXP ops_ptr){
   CAST_PTR(ptr, Ops, ops_ptr);
   return ScalarInteger(ptr->number);
@@ -54,11 +44,32 @@ SEXP C_get_paired_ops(SEXP ops_ptr){
   return ops->R_paired_ops;
 }
 
+SEXP C_get_input_ptr(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+  if (!ops->inputs_header)
+    return R_NilValue;
+  // Transform into the ExternalPointer
+  SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(ops->inputs_header, R_NilValue, R_NilValue));
+  R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
+  UNPROTECT(1);
+  return new_ops_ptr;
+}
+
+SEXP C_get_output_ptr(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+  if (!ops->outputs_header)
+    return R_NilValue;
+  // Transform into the ExternalPointer
+  SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(ops->outputs_header, R_NilValue, R_NilValue));
+  R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
+  UNPROTECT(1);
+  return new_ops_ptr;
+}
+
 // Free all the virtual objects from the inputs and their inputs
 // It can be real object only
 void free_chain(struct Ops* ops){
   // Check, if object is 'real'
 
   // free_chain recursively till reaching a real object
-
 }

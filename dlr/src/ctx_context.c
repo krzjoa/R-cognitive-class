@@ -163,19 +163,6 @@ SEXP C_get_inputs(SEXP ops_ptr){
   return out;
 }
 
-SEXP C_get_input_ptr(SEXP ops_ptr){
-  CAST_PTR(ops, Ops, ops_ptr);
-
-  if (!ops->inputs_header)
-    return R_NilValue;
-
-  // Transform into the ExternalPointer
-  SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(ops->inputs_header->contained, R_NilValue, R_NilValue));
-  R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
-  UNPROTECT(1);
-
-  return new_ops_ptr;
-}
 
 SEXP C_get_outputs(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);

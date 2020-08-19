@@ -2,6 +2,7 @@
 #' TODO: one convention for corresponding C and  function names
 #' TODO: check, if all the operations still exists
 #' Thera are several potential solutions of this problem
+#' TODO: variable names convention
 
 #' TODO: context enironment should keep exact pointers to all the dlr objects
 #' For example, if we create in global
@@ -150,6 +151,41 @@ get_outputs <- function(ops_ptr) {
   .Call(C_get_outputs, ops_ptr)
 }
 
+#' @name get_output_ptr
+#' @title Get operation inputs
+#' @useDynLib dlr C_get_output_ptr
+#' @export
+get_output_ptr <- function(ops_ptr) {
+  .Call(C_get_output_ptr, ops_ptr)
+}
+
+#' @name connect
+#' @title Connect tensors and functions to track computational chain.
+#' It's needed to compute gradients
+#' @param input Input operations (tensors or functions)
+#' @param output Output operations (tensors or functions)
+connect <- function(input, output){
+  # Wrap inputs and outputs with lists
+  if (!is.list(input))
+    input <- list(input)
+  if (!is.list(output))
+    output <- list(output)
+  # Suboptimal implementation with ordinary R for loop
+  for (inp in inputs) {
+
+    if (inherits(inp, "cpu_tensor"))
+      inp.ptr <- inp@pointer
+
+    for (out in output) {
+
+      if (inherits(out, "cpu_tensor"))
+        out.ptr <- out@pointer
+      add_output(inp, out)
+      add_input(out, inp)
+    }
+  }
+}
+
 #' @examples
 #' library(dlr)
 #' ctx <- get_context()
@@ -161,8 +197,6 @@ get_outputs <- function(ops_ptr) {
 #' x <- cpu_tensor(5, dims = 1)
 #' y <- x ** 3
 #'
-#' backward(y)
-#'
 #' # Show context
 #' n_nodes()
 #' get_all_ops(get_context())
@@ -171,13 +205,13 @@ get_outputs <- function(ops_ptr) {
 #' get_r_ops(get_context(), 4)
 #' get_r_ops(get_context(), 7)
 #'
+#' get_input_ptr(tail(all.ops, 1)[[1]])
+#'
 #' get_inputs(tail(all.ops, 1)[[1]])
 #'
 #' # Adding links to nodes
 #' .add_node_inputs(ctx, 13, as.integer(c(20, 45)))
 #' .get_linked_nodes(ctx, 13)
-#'
-
 #'
 #' # Not working! :get_inputs(x)
 #' y

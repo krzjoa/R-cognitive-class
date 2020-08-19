@@ -18,6 +18,7 @@ struct Link{
 void _Link_finalizer(struct Link *link);
 struct Link* create_Link(struct Ops *contained_ops, struct Link *next_link);
 struct Link* last_link(struct Link *current_link);
+int _get_n_elems(struct Link* current_link);
 
 // Ops
 struct Ops{
@@ -35,9 +36,10 @@ struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops);
 void add_input_Ops(struct Ops* ops, struct Ops* input_ops);
 void add_output_Ops(struct Ops* ops, struct Ops* output_ops);
 void free_chain(struct Ops* ops);
-int _get_n_elems(struct Link* current_link);
 SEXP C_get_ops_number(SEXP ops_ptr);
 SEXP C_get_paired_ops(SEXP ops_ptr);
+SEXP C_get_input_ptr(SEXP ops_ptr);
+SEXP C_get_output_ptr(SEXP ops_ptr);
 
 
 // DlrContext
@@ -58,7 +60,6 @@ SEXP C_show_graph(SEXP DlrContext_ptr);
 SEXP C_add_input(SEXP node_ptr, SEXP input_ptr);
 SEXP C_add_output(SEXP node_ptr, SEXP output_ptr);
 SEXP C_get_inputs(SEXP ops_ptr);
-SEXP C_get_input_ptr(SEXP ops_ptr);
 SEXP C_get_outputs(SEXP ops_ptr);
 
 
