@@ -83,12 +83,20 @@ register_ops <- function(ctx, r.ops, paired.ops = NULL){
   return(ptr)
 }
 
-#' @name get_paired_ops
+#' @name get_object
 #' @title Get paired operatin such as function derivative
-#' @useDynLib dlr C_get_paired_ops
+#' @useDynLib dlr C_get_object
 #' @export
-get_paired_ops <- function(ops.ptr){
-  .Call(C_get_paired_ops, ops.ptr)
+get_object <- function(ops.ptr){
+  .Call(C_get_object, ops.ptr)
+}
+
+#' @name get_paired_object
+#' @title Get paired operatin such as function derivative
+#' @useDynLib dlr C_get_paired_object
+#' @export
+get_paired_object <- function(ops.ptr){
+  .Call(C_get_paired_object, ops.ptr)
 }
 
 #' @name reassign_ops
@@ -171,17 +179,22 @@ connect <- function(input, output){
   if (!is.list(output))
     output <- list(output)
   # Suboptimal implementation with ordinary R for loop
-  for (inp in inputs) {
+  for (inp in input) {
 
     if (inherits(inp, "cpu_tensor"))
       inp.ptr <- inp@pointer
+    else
+      inp.ptr <- inp
 
     for (out in output) {
 
       if (inherits(out, "cpu_tensor"))
         out.ptr <- out@pointer
-      add_output(inp, out)
-      add_input(out, inp)
+      else
+        out.ptr <- out
+
+      add_output(inp.ptr, out)
+      add_input(out, inp.ptr)
     }
   }
 }
@@ -205,7 +218,7 @@ connect <- function(input, output){
 #' get_r_ops(get_context(), 4)
 #' get_r_ops(get_context(), 7)
 #'
-#' get_input_ptr(tail(all.ops, 1)[[1]])
+#' get_input_ptr(all.ops[[5]])
 #'
 #' get_inputs(tail(all.ops, 1)[[1]])
 #'

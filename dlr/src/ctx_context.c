@@ -1,8 +1,6 @@
 #include "context.h"
 
-
 // Transform to OpsContainer or something like that;
-// DlrContext transform to environment
 struct DlrContext;
 
 static void _DlrContext_finalizer(SEXP ext)
@@ -23,7 +21,6 @@ SEXP C_create_context(){
 }
 
 // Create an operation and add it to the context
-// TODO: remove debugging
 SEXP C_register_ops(SEXP DlrContext_ptr, SEXP R_ops, SEXP R_paired_ops){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
   // Increment ops counter
@@ -97,6 +94,9 @@ SEXP C_get_all_ops(SEXP DlrContext_ptr){
 }
 
 
+/*
+ * @return EXPTR (Ops)
+ */
 SEXP C_get_all_ops_ptr(SEXP DlrContext_ptr){
   CAST_PTR(context, DlrContext, DlrContext_ptr);
 
@@ -109,7 +109,7 @@ SEXP C_get_all_ops_ptr(SEXP DlrContext_ptr){
   int current_index = 0;
 
   while(current_link){
-    SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(current_link, R_NilValue, R_NilValue));
+    SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(current_link->contained, R_NilValue, R_NilValue));
     R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
     SET_VECTOR_ELT(out, current_index, new_ops_ptr);
     current_link = current_link->next;
@@ -119,8 +119,6 @@ SEXP C_get_all_ops_ptr(SEXP DlrContext_ptr){
   UNPROTECT((context->V) + 1);
   return out;
 }
-
-
 
 SEXP C_add_input(SEXP node_ptr, SEXP input_ptr){
   CAST_PTR(ops, Ops, node_ptr);
@@ -142,7 +140,7 @@ SEXP C_get_inputs(SEXP ops_ptr){
   if (!ops->inputs_header)
     return R_NilValue;
 
-  int n_linked_ops = _get_n_elems(ops->inputs_header);
+  int n_linked_ops = get_chain_length(ops->inputs_header);
 
   //http://adv-r.had.co.nz/C-interface.html#c-vectors
   int* pout;
@@ -163,14 +161,13 @@ SEXP C_get_inputs(SEXP ops_ptr){
   return out;
 }
 
-
 SEXP C_get_outputs(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
 
   if (!ops->outputs_header)
     return R_NilValue;
 
-  int n_linked_ops = _get_n_elems(ops->outputs_header);
+  int n_linked_ops = get_chain_length(ops->outputs_header);
 
   //http://adv-r.had.co.nz/C-interface.html#c-vectors
   int* pout;
@@ -187,4 +184,3 @@ SEXP C_get_outputs(SEXP ops_ptr){
   }
   return out;
 }
-

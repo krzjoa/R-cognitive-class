@@ -41,6 +41,15 @@ cpu_tensor <- function(data, dims, requires.grad = FALSE){
   tensor
 }
 
+#' @name scalar
+#' @title CPU tensor
+#' @export
+scalar <- function(x){
+  cpu_tensor(data  = x,
+             dims = 1,
+             requires.grad = FALSE)
+}
+
 
 
 

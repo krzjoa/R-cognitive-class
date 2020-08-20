@@ -39,11 +39,6 @@ SEXP C_get_ops_number(SEXP ops_ptr){
   return ScalarInteger(ptr->number);
 }
 
-SEXP C_get_paired_ops(SEXP ops_ptr){
-  CAST_PTR(ops, Ops, ops_ptr);
-  return ops->R_paired_ops;
-}
-
 SEXP C_get_input_ptr(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
   if (!ops->inputs_header)
@@ -64,6 +59,19 @@ SEXP C_get_output_ptr(SEXP ops_ptr){
   R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
   UNPROTECT(1);
   return new_ops_ptr;
+}
+
+/*
+ * Get contained R object from Ops
+ */
+SEXP C_get_object(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+  return ops->R_ops;
+}
+
+SEXP C_get_paired_object(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+  return ops->R_paired_ops;
 }
 
 // Free all the virtual objects from the inputs and their inputs

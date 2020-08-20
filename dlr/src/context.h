@@ -2,11 +2,6 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-// TODO: Check, if one can place struct definitions in the .c files instead of
-// TODO: use one convention for asterisks
-// placing the in the header file with declation in the particular files.
-// See: https://stackoverflow.com/questions/180401/placement-of-the-asterisk-in-pointer-declarations
-
 // Macros
 #define CAST_PTR(output, struct_name, ptr) struct struct_name *output = (struct struct_name*) R_ExternalPtrAddr(ptr);
 
@@ -18,7 +13,7 @@ struct Link{
 void _Link_finalizer(struct Link *link);
 struct Link* create_Link(struct Ops *contained_ops, struct Link *next_link);
 struct Link* last_link(struct Link *current_link);
-int _get_n_elems(struct Link* current_link);
+int get_chain_length(struct Link* current_link);
 
 // Ops
 struct Ops{
@@ -37,10 +32,10 @@ void add_input_Ops(struct Ops* ops, struct Ops* input_ops);
 void add_output_Ops(struct Ops* ops, struct Ops* output_ops);
 void free_chain(struct Ops* ops);
 SEXP C_get_ops_number(SEXP ops_ptr);
-SEXP C_get_paired_ops(SEXP ops_ptr);
 SEXP C_get_input_ptr(SEXP ops_ptr);
 SEXP C_get_output_ptr(SEXP ops_ptr);
-
+SEXP C_get_object(SEXP ops_ptr);
+SEXP C_get_paired_object(SEXP ops_ptr);
 
 // DlrContext
 struct DlrContext{
@@ -61,6 +56,11 @@ SEXP C_add_input(SEXP node_ptr, SEXP input_ptr);
 SEXP C_add_output(SEXP node_ptr, SEXP output_ptr);
 SEXP C_get_inputs(SEXP ops_ptr);
 SEXP C_get_outputs(SEXP ops_ptr);
+
+// TODO: Check, if one can place struct definitions in the .c files instead of
+// TODO: use one convention for asterisks
+// placing the in the header file with declation in the particular files.
+// See: https://stackoverflow.com/questions/180401/placement-of-the-asterisk-in-pointer-declarations
 
 
 // Useful links
@@ -86,7 +86,6 @@ SEXP C_get_outputs(SEXP ops_ptr);
   //' dest: object id
   //' next: pointer to adjacent ops
   //' use one convention with pointers
-  //' Divide into 3 files
   //'
   //' Incrementation:
   //' https://stackoverflow.com/questions/8208021/how-to-increment-a-pointer-address-and-pointers-value?rq=1

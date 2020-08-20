@@ -25,8 +25,7 @@ struct Link* last_link(struct Link *current_link){
   return current_link;
 }
 
-//' TODO: rename
-int _get_n_elems(struct Link* current_link){
+int get_chain_length(struct Link* current_link){
   int i = 0;
   while(current_link){
     i++;
