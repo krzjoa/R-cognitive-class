@@ -4,10 +4,9 @@
 #' Keep consistent style for variable names
 .operator_tensor_numeric <- function(fun, deriv, tensor.arg, numeric.arg){
   .fun   <- register_ops(get_context(), fun, deriv)
-
   # Convert numeric arg to tensor
   scalar.var <- scalar(numeric.arg)
-  connect(.fun, list(tensor.arg, scalar.var))
+  connect(list(tensor.arg, scalar.var), .fun)
 
   # Problem: newly created tensor has by default
   # The simpliest solution is may be potentially dangerous and does not handle
@@ -18,7 +17,7 @@
 
   # TODO: create one function, e.g.: connect_ops()
   # x <- reassign_ops(x)
-  connect(x, .fun)
+  connect(.fun, x)
   return(x)
 }
 
@@ -31,7 +30,6 @@
 mat_elem_pow <- function(x, y){
   .operator_tensor_numeric(.otn_pow, .otn_pow_deriv, x, y)
 }
-
 
 # mat_elem_pow <- function(x, y){
 #   forward <- function(x, y) x ** y
@@ -55,7 +53,6 @@ setMethod("Arith", c(e1="cpu_tensor", e2="numeric"),
           valueClass = "cpu_tensor"
 )
 
-
 #' @name backward
 #' @title This function traverses the graph back and computes all the gradients where it's needed
 #' @param ops tensor
@@ -63,7 +60,6 @@ backward <- function(ops){
   # For simplicity, suppose we have only one sequence of operations
 
 }
-
 
 # set_tensor_method <- function(fun, deriv){
 #

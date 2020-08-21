@@ -49,10 +49,3 @@ scalar <- function(x){
              dims = 1,
              requires.grad = FALSE)
 }
-
-
-
-
-
-
-

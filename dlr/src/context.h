@@ -57,6 +57,9 @@ SEXP C_add_output(SEXP node_ptr, SEXP output_ptr);
 SEXP C_get_inputs(SEXP ops_ptr);
 SEXP C_get_outputs(SEXP ops_ptr);
 
+// Utils
+SEXP C_compare_ptr(SEXP x, SEXP y);
+
 // TODO: Check, if one can place struct definitions in the .c files instead of
 // TODO: use one convention for asterisks
 // placing the in the header file with declation in the particular files.
