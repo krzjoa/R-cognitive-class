@@ -61,6 +61,12 @@ SEXP C_get_outputs(SEXP ops_ptr);
 SEXP C_compare_ptr(SEXP x, SEXP y);
 SEXP C_adjacency_matrix(SEXP ctx);
 
+//' Initializing DLL library
+//' * https://github.com/Rdatatable/data.table/blob/a8ec94484d2cc375d8295a94bacc5353576c238a/src/init.c
+//' * https://github.com/randy3k/xptr/blob/master/src/xptr.c
+//' * https://github.com/tidyverse/purrr/blob/master/src/init.c
+//' * R_registerRoutines
+
 // TODO: Check, if one can place struct definitions in the .c files instead of
 // TODO: use one convention for asterisks
 // placing the in the header file with declation in the particular files.
@@ -106,7 +112,5 @@ SEXP C_adjacency_matrix(SEXP ctx);
 // https://github.com/wch/r-source/blob/5a156a0865362bb8381dcd69ac335f5174a4f60c/src/main/dstruct.c
 
 
-// R_registerRoutines
-// https://github.com/tidyverse/purrr/blob/master/src/init.c
 
 
