@@ -26,6 +26,7 @@ compare_ptr <- function(x, y){
 #' register_ops(ctx, cars)
 #' register_ops(ctx, data.frame)
 #' x <- cpu_tensor(5, dims = 1)
+#' y <- x ** 3
 #' all.ops <- get_all_ops_ptr(ctx)
 #' is_in_pointer_list(x@pointer,  all.ops)
 #' @export

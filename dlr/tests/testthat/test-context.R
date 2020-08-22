@@ -3,7 +3,6 @@ test_that("Create context", {
   expect_true(inherits(ctx, "dlr_context"))
 })
 
-
 test_that("Register operations", {
    ctx <- .create_context()
    dplyr.ptr <- register_ops(ctx, dplyr::mutate)
