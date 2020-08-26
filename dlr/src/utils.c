@@ -26,14 +26,12 @@ SEXP C_adjacency_matrix(SEXP ctx){
  struct Link *current_link = context->head;
  int current_index = 0;
 
+ // Get allthe names
+ // TODO: export this fragment to separate function
  while(current_link){
    INTEGER(ops_names)[current_index] = current_link->contained->number;
    current_link = current_link->next;
    current_index++;
-
-   // Loop over ops adjacencies
-
-
  }
 
  // Setting dimnaes
@@ -41,6 +39,17 @@ SEXP C_adjacency_matrix(SEXP ctx){
  SET_VECTOR_ELT(dimnames, 0, ops_names);
  SET_VECTOR_ELT(dimnames, 1, ops_names);
  setAttrib(adj_mat, R_DimNamesSymbol, dimnames);
+
+ // Looping over all the nodes to get adjacencies
+ current_link = context->head;
+ current_index = 0;
+
+ // Access elements using dimnames
+
+ while(current_link){
+    current_link = current_link->next;
+    current_index++;
+ }
 
  UNPROTECT(3);
  return adj_mat;
