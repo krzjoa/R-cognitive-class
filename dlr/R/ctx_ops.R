@@ -66,13 +66,15 @@ get_output_ptr <- function(ops_ptr) {
 }
 
 #' TODO: rename input and output
+#' FIXME: it's probably a crucial function!
 #' @name connect
 #' @title Connect tensors and functions to track computational chain.
 #' It's needed to compute gradients
 #' @param input Input operations (tensors or functions)
 #' @param output Output operations (tensors or functions)
 connect <- function(input, output){
-  browser()
+  # return(NULL)
+  # browser()
   # Wrap inputs and outputs with lists
   if (!is.list(input))
     input <- list(input)

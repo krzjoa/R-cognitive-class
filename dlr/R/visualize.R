@@ -14,7 +14,8 @@
 #' @export
 adjacency_matrix <- function(ctx){
   mat <- .Call(C_adjacency_matrix, ctx[['_container']])
-  add_class(mat) <- "soprano_adjacency_matrix"
+  # add_class(mat) <- "soprano_adjacency_matrix"
+  class(mat) <- c(class(mat), "soprano_adjacency_matrix")
   return(mat)
 }
 

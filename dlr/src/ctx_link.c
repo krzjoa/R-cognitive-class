@@ -32,5 +32,4 @@ int get_chain_length(struct Link* current_link){
     current_link = current_link->next;
   }
   return i;
-
 }

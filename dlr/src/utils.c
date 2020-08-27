@@ -11,12 +11,13 @@ int match_index_int(SEXP int_list, int value){
 }
 
 // Consider using typedef, but it may be confusing
-int find_connection(SEXP Dlr_context, int first_ops_number, int second_ops_number){
-  struct Ops* first_ops = get_ops(Dlr_context, first_ops_number);
-  struct Link* current_link = first_ops->inputs_header;
+int find_connection(SEXP Dlr_context, struct Ops* first_ops_ptr, struct Ops* second_ops_ptr){
+  struct Link* current_link = first_ops_ptr->inputs_header;
   while(current_link){
-    if (current_link->contained->number == second_ops_number)
+    if (current_link->contained->number == second_ops_ptr->number){
       return 1;
+    }
+    current_link = current_link->next;
   }
   return 0;
 }
@@ -48,6 +49,7 @@ SEXP C_adjacency_matrix(SEXP ctx){
 
  SEXP adj_mat = PROTECT(allocMatrix(INTSXP, context->V, context->V));
  SEXP ops_names = PROTECT(allocVector(INTSXP, context->V));
+ struct Ops* ops_pointers[context->V];
 
  // Loop over all the ops
  struct Link *current_link = context->head;
@@ -57,6 +59,7 @@ SEXP C_adjacency_matrix(SEXP ctx){
  // TODO: export this fragment to separate function
  while(current_link){
    INTEGER(ops_names)[current_index] = current_link->contained->number;
+   ops_pointers[current_index] = current_link->contained;
    current_link = current_link->next;
    current_index++;
  }
@@ -81,7 +84,7 @@ SEXP C_adjacency_matrix(SEXP ctx){
  for (int row=0; row < length(ops_names); row++){
     for (int col=0; col < length(ops_names); col++){
        // Getting right value to set
-       int_matrix[row * length(ops_names) + col] = find_connection(ctx, ops_names_int[row], ops_names_int[col]);
+       int_matrix[row * length(ops_names) + col] = find_connection(ctx, ops_pointers[row], ops_pointers[col]);
     }
  }
 
