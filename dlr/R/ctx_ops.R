@@ -82,21 +82,11 @@ connect <- function(input, output){
     output <- list(output)
   # Suboptimal implementation with ordinary R for loop
   for (inp in input) {
-
-    if (inherits(inp, "cpu_tensor"))
-      inp.ptr <- inp@pointer
-    else
-      inp.ptr <- inp
-
+    inp <- get_soprano_pointer(inp)
     for (out in output) {
-
-      if (inherits(out, "cpu_tensor"))
-        out.ptr <- out@pointer
-      else
-        out.ptr <- out
-
-      add_output(inp.ptr, out)
-      add_input(out, inp.ptr)
+      out <- get_soprano_pointer(inp)
+      add_output(inp, out)
+      add_input(out, inp)
     }
   }
 }

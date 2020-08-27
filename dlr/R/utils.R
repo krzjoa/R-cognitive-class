@@ -35,6 +35,17 @@ is_in_pointer_list <- function(ptr, ptr.list){
 }
 
 
+#' @name get_soprano_pointer
+#' @title Retun pointer to soprano graph's nodes
+#' @description If obj is a pointer, it returns obj.
+get_soprano_pointer <- function(obj){
+  if (inherits(obj, "cpu_tensor"))
+    return(obj@pointer)
+  else
+    return(obj)
+}
+
+
 #' @name add_class
 #' @title Add class name
 `add_class<-` <- function(obj, new_class){
