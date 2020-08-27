@@ -13,5 +13,13 @@
 #' adjacency_matrix(ctx)
 #' @export
 adjacency_matrix <- function(ctx){
-  .Call(C_adjacency_matrix, ctx[['_container']])
+  mat <- .Call(C_adjacency_matrix, ctx[['_container']])
+  add_class(mat) <- "soprano_adjacency_matrix"
+  return(mat)
+}
+
+#' @name plot
+#' @title Plot somprano adjacency matrix
+plot.soprano_adjacency_matrix<- function(adj_mat){
+  print(adj_mat)
 }

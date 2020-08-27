@@ -33,3 +33,11 @@ compare_ptr <- function(x, y){
 is_in_pointer_list <- function(ptr, ptr.list){
   return(any(unlist(Map(function(x) compare_ptr(x, ptr), ptr.list))))
 }
+
+
+#' @name add_class
+#' @title Add class name
+`add_class<-` <- function(obj, new_class){
+  class(obj) <- c(class(obj), new_class)
+  return(obj)
+}

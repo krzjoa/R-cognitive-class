@@ -55,8 +55,8 @@ SEXP C_get_r_ops(SEXP DlrContext_ptr, SEXP number){
   return R_NilValue;
 }
 
-struct Ops* get_ops(SEXP DlrContext_ptr, SEXP number){
-  CAST_PTR(context, DlrContext, DlrContext_ptr);
+  struct Ops* get_ops(SEXP DlrContext_ptr, SEXP number){
+    CAST_PTR(context, DlrContext, DlrContext_ptr);
   int int_number = asInteger(number);
   struct Link *current_link = context->head;
   while(current_link){

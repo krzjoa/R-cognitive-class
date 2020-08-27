@@ -61,6 +61,8 @@ SEXP C_get_outputs(SEXP ops_ptr);
 SEXP C_compare_ptr(SEXP x, SEXP y);
 SEXP C_adjacency_matrix(SEXP ctx);
 
+// Array
+
 //' Initializing DLL library
 //' * https://github.com/Rdatatable/data.table/blob/a8ec94484d2cc375d8295a94bacc5353576c238a/src/init.c
 //' * https://github.com/randy3k/xptr/blob/master/src/xptr.c
@@ -110,6 +112,7 @@ SEXP C_adjacency_matrix(SEXP ctx);
 // https://github.com/USCbiostats/software-dev/wiki/Structures-and-pointers-with-Rcpp
 // http://lists.r-forge.r-project.org/pipermail/rcpp-devel/2013-July/006249.html
 // https://github.com/wch/r-source/blob/5a156a0865362bb8381dcd69ac335f5174a4f60c/src/main/dstruct.c
+// https://stackoverflow.com/questions/8194250/polymorphism-in-c
 
 
 

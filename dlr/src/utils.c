@@ -1,5 +1,28 @@
 #include "context.h"
 
+// Helper function, move to another file
+int match_index_int(SEXP int_list, int value){
+   int list_length = length(int_list);
+   for(int i=0; i<list_length; i++){
+      if (INTEGER(int_list)[i] == value)
+         return i;
+   }
+   return -1;
+}
+
+// Consider using typedef, but it may be confusing
+int find_connection(SEXP Dlr_context, int first_ops_number, int second_ops_number){
+  struct Ops* first_ops = get_ops(Dlr_context, first_ops_number);
+  struct Link* current_link = first_ops->inputs_header;
+  while(current_link){
+    if (current_link->contained->number == second_ops_number)
+      return 1;
+  }
+  return 0;
+}
+
+
+
 /* @name C_compare_ptr
  * @title Check if two pointers are the same
  * @param x external pointer
@@ -12,6 +35,10 @@ SEXP C_compare_ptr(SEXP x, SEXP y){
 
 /*
  * Get adjacency matrix for all the operations in the context
+ *
+ * TODO: Konkurencyjny algorytm: iterować po wszytkich możliwych połączeniach
+ * (bo i tak trzeba powstawiać zera!)
+ *
  */
 SEXP C_adjacency_matrix(SEXP ctx){
  CAST_PTR(context, DlrContext, ctx);
@@ -44,14 +71,24 @@ SEXP C_adjacency_matrix(SEXP ctx){
  current_link = context->head;
  current_index = 0;
 
- // Access elements using dimnames
+ // Casted R matrix
+ int* int_matrix = INTEGER(adj_mat);
+ int* ops_names_int = INTEGER(ops_names);
 
- while(current_link){
-    current_link = current_link->next;
-    current_index++;
+ // TODO: check length(dimnames) vs int mat_length = length(dimnames);
+
+ // Iterate over all the 'cells' in the matrix
+ for (int row=0; row < length(ops_names); row++){
+    for (int col=0; col < length(ops_names); col++){
+       // Getting right value to set
+       int_matrix[row * length(ops_names) + col] = find_connection(ctx, ops_names_int[row], ops_names_int[col]);
+    }
  }
 
- UNPROTECT(3);
- return adj_mat;
+  UNPROTECT(3);
+  return adj_mat;
 }
+
+
+
 
