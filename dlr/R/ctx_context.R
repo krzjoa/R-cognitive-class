@@ -1,5 +1,4 @@
 # Helper functions to create context, which handles computational graph
-#' TODO: one convention for corresponding C and  function names
 #' TODO: check, if all the operations still exists
 #' Thera are several potential solutions of this problem
 #' TODO: variable names convention

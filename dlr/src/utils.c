@@ -37,8 +37,6 @@ SEXP C_compare_ptr(SEXP x, SEXP y){
 /*
  * Get adjacency matrix for all the operations in the context
  *
- * TODO: Konkurencyjny algorytm: iterować po wszytkich możliwych połączeniach
- * (bo i tak trzeba powstawiać zera!)
  *
  */
 SEXP C_adjacency_matrix(SEXP ctx){
@@ -87,6 +85,8 @@ SEXP C_adjacency_matrix(SEXP ctx){
        int_matrix[row * length(ops_names) + col] = find_connection(ctx, ops_pointers[row], ops_pointers[col]);
     }
  }
+
+ // TODO: add attribute with list of pointers
 
   UNPROTECT(3);
   return adj_mat;

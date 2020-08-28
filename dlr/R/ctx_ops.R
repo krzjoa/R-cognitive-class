@@ -84,7 +84,7 @@ connect <- function(input, output){
   for (inp in input) {
     inp <- get_soprano_pointer(inp)
     for (out in output) {
-      out <- get_soprano_pointer(inp)
+      out <- get_soprano_pointer(out)
       add_output(inp, out)
       add_input(out, inp)
     }
