@@ -1,12 +1,12 @@
 Package: dlr
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: dlr: Tensors 
+Version: 0.0.1
 Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person(given   = "Krzysztof",
+           family  = "Joachimiak",
+           role    = c("aut", "cre"),
+           email   = "joachimiak.krzysztof@gmail.com",
+           comment = c(ORCID = "0000-0003-4780-7947"))
 Description: What the package does (one paragraph).
 License: What license it uses
 Encoding: UTF-8
@@ -14,3 +14,15 @@ LazyData: true
 RoxygenNote: 6.1.1
 Suggests: 
     testthat (>= 2.1.0)
+Collate: 
+    'dlr.R'
+    'ctx_context.R'
+    'ctx_ops.R'
+    'tensor.R'
+    'arith-tensor-tensor.R'
+    'arith-tensor-numeric.R'
+    'arith-numeric-tensor.R'
+    'backward.R'
+    'utils.R'
+    'visualize.R'
+    'zzz.R'

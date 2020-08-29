@@ -2,7 +2,7 @@
 % Please edit documentation in R/tensor.R
 \name{tensor}
 \alias{tensor}
-\title{Create `fuego` tensor of arbitrary shapes}
+\title{Create `soprano` tensor of arbitrary shapes}
 \arguments{
 \item{data}{numeric vector, array or data.frame}
 

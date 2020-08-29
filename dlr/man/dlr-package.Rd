@@ -4,12 +4,12 @@
 \name{dlr-package}
 \alias{dlr}
 \alias{dlr-package}
-\title{dlr: What the Package Does (One Line, Title Case)}
+\title{dlr: dlr: Tensors}
 \description{
 What the package does (one paragraph).
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (YOUR-ORCID-ID)
+\strong{Maintainer}: Krzysztof Joachimiak \email{joachimiak.krzysztof@gmail.com} (0000-0003-4780-7947)
 
 }
 \keyword{internal}
