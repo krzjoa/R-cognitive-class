@@ -27,6 +27,7 @@ setClassUnion("rray_class", members = c("vctrs_rray", "vctrs_vctr", "vctrs_rray_
      dims     = "numeric",
      grad     = "rray_class",
      pointer  = "externalptr"
+     # is_leaf ?
 ))
 
 #' cpu_tensor class constructor
