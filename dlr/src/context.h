@@ -36,6 +36,7 @@ SEXP C_get_input_ptr(SEXP ops_ptr);
 SEXP C_get_output_ptr(SEXP ops_ptr);
 SEXP C_get_object(SEXP ops_ptr);
 SEXP C_get_paired_object(SEXP ops_ptr);
+SEXP C_is_root(SEXP ops_ptr);
 
 // DlrContext
 struct DlrContext{

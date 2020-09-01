@@ -10,6 +10,10 @@
 #' x   <- cpu_tensor(1:30, c(3, 10))
 NULL
 
+#' How to store information, if gradient is required?
+#' * grad slot == NULL
+#' *
+
 # TODO: create abstraction class??
 # See: https://stackoverflow.com/questions/12636056/why-sometimes-i-cant-set-a-class-definition-as-slot-in-a-s4-class
 # https://stackoverflow.com/questions/13002200/s4-classes-multiple-types-per-slot
@@ -23,10 +27,11 @@ setClassUnion("rray_class", members = c("vctrs_rray", "vctrs_vctr", "vctrs_rray_
 #' tensor class definition
 .cpu_tensor <- setClass("cpu_tensor",
    representation(
-     data     = "rray_class",
-     dims     = "numeric",
-     grad     = "rray_class",
-     pointer  = "externalptr"
+     data          = "rray_class",
+     dims          = "numeric",
+     grad          = "rray_class",
+     pointer       = "externalptr",
+     requires_grad = "logical"
      # is_leaf ?
 ))
 
@@ -34,17 +39,19 @@ setClassUnion("rray_class", members = c("vctrs_rray", "vctrs_vctr", "vctrs_rray_
 #' @name cpu_tensor
 #' @title CPU tensor
 #' @export
-cpu_tensor <- function(data, dims, requires.grad = FALSE){
+cpu_tensor <- function(data, dims, requires_grad = FALSE){
 
   data <- rray(x = data, dim = dims)
   grad <- rray(0, dim = dims)
-  # grad <- if (requires.grad) array(0, dim = dims) else array(NULL)
 
   # TODO: remove xptr lib use
-  tensor <- .cpu_tensor(data = data,
-                        dims = dims,
-                        grad = grad,
-                        pointer = xptr::null_xptr())
+  tensor <- .cpu_tensor(
+    data          = data,
+    dims          = dims,
+    grad          = grad,
+    pointer       = xptr::null_xptr(),
+    requires_grad = requires_grad
+  )
   ctx <- get_context()
   ptr <- register_ops(ctx, tensor)
   tensor@pointer <- ptr
@@ -55,7 +62,8 @@ cpu_tensor <- function(data, dims, requires.grad = FALSE){
 #' @title CPU tensor
 #' @export
 scalar <- function(x){
-  cpu_tensor(data  = x,
-             dims = 1,
-             requires.grad = FALSE)
+  cpu_tensor(
+    data          = x,
+    dims          = 1,
+    requires_grad = FALSE)
 }

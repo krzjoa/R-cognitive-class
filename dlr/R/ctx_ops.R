@@ -65,6 +65,14 @@ get_output_ptr <- function(ops_ptr) {
   .Call(C_get_output_ptr, ops_ptr)
 }
 
+#' @name is_root
+#' @title Check, if the current node is root
+#' @useDynLib dlr C_is_root
+#' @export
+is_root <- function(ops_ptr){
+  .Call(C_is_root, ops_ptr)
+}
+
 #' TODO: rename input and output
 #' FIXME: it's probably a crucial function!
 #' @name connect

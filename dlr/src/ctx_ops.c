@@ -74,6 +74,15 @@ SEXP C_get_paired_object(SEXP ops_ptr){
   return ops->R_paired_ops;
 }
 
+/*
+ * Check, if operation is a root node
+ * Node is a root node if it has no 'inputs'
+ */
+SEXP C_is_root(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+  return ScalarLogical((int) (ops->inputs_header == NULL));
+}
+
 // Free all the virtual objects from the inputs and their inputs
 // It can be real object only
 void free_chain(struct Ops* ops){
