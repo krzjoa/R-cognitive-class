@@ -21,21 +21,26 @@
 
 #' Abstract function for tensor-numeric operations
 #' Backward function rather than partial derivative?
+#' Problem: newly created tensor has by default
+#  The simpliest solution is may be potentially dangerous and does not handle
+#  simple R operations such as x <- y
+#  See: https://www.brodieg.com/2019/02/18/an-unofficial-reference-for-internal-inspect/
+
+#' Maybe we don't need to track some 'abstract tensors'
+#' Memoisation can handle this case instead
+
 .abstract_operator <- function(fun, deriv, tensor.1, tensor.2){
+  # Propagate requires_grad
+  requires_grad <- any(tensor.1@requires_grad,
+                       tensor.2@requires_grad)
+
   .fun   <- register_ops(get_context(), fun, deriv)
   connect(list(tensor.1, tensor.2), .fun)
-  # Problem: newly created tensor has by default
-  # The simpliest solution is may be potentially dangerous and does not handle
-  # simple R operations such as x <- y
-  # See: https://www.brodieg.com/2019/02/18/an-unofficial-reference-for-internal-inspect/
 
-  #' Maybe we don't need to track some 'abstract tensors'
-  #' Memoisation can handle this case instead
+  x@data          <- fun(tensor.1@data, tensor.2@data)
+  x@pointer       <- register_ops(get_context(), x)
+  x@requires_grad <- requires_grad
 
-  x@data    <- fun(tensor.1@data, tensor.2@data)
-  x@pointer <- register_ops(get_context(), x)
-
-  # TODO: create one function, e.g.: connect_ops()
   # x <- reassign_ops(x)
   connect(.fun, x)
   return(x)

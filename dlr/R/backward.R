@@ -11,13 +11,28 @@
 #' See: https://pytorch.org/docs/stable/autograd.html
 #' https://github.com/HIPS/autograd/blob/master/autograd/numpy/numpy_vjps.py
 #'
-#' We need to propagate information, if gradient is required or not
+#' TODO: unify names ops vs ops_ptr
 #'
+#' We need to propagate information, if gradient is required or not
+#' @examples
+#' library(dlr)
+#' ctx <- get_context()
+#' register_ops(ctx, cars)
+#' register_ops(ctx, data.frame)
+#' x <- cpu_tensor(5, dims = 1)
+#' y <- (x ** 3) / 2
+#' all.ops <- get_all_ops_ptr(ctx)
+#' get_inputs_ptr(all.ops[[6]])
 backward <- function(ops, gradient){
 
   # For simplicity, suppose we have only one sequence of operations
   if (!inherits(ops, "cpu_tensor"))
     stop("Error!")
+
+  #' We don't modify the tensor we start from
+  #' We take a step back and get an operation
+  inputs <- get_input_ptr(ops)
+
 
   # Compute gradient
 

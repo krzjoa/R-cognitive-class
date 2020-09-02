@@ -20,6 +20,8 @@ struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops){
   return ops;
 }
 
+// Combine with add_output_Ops
+// Tutaj prawdopodobnie jest błąd i powinno być: last_link(ops->inputs_header)
 void add_input_Ops(struct Ops* ops, struct Ops* input_ops){
   if(!ops->inputs_header)
     ops->inputs_header = create_Link(input_ops, NULL);
@@ -73,6 +75,60 @@ SEXP C_get_paired_object(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
   return ops->R_paired_ops;
 }
+
+
+// Combine with C_get_outputs
+SEXP C_get_inputs(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+
+  if (!ops->inputs_header)
+    return R_NilValue;
+
+  int n_linked_ops = get_chain_length(ops->inputs_header);
+
+  //http://adv-r.had.co.nz/C-interface.html#c-vectors
+  int* pout;
+  SEXP out = PROTECT(allocVector(INTSXP, n_linked_ops));
+  pout = INTEGER(out);
+
+  int i = 0;
+  struct Link* current_link = ops->inputs_header;
+  // This operation can be transformed into iter_links (?)
+  while(current_link){
+    pout[i] = current_link->contained->number;
+    i++;
+    current_link = current_link->next;
+  }
+
+  UNPROTECT(1);
+
+  return out;
+}
+
+SEXP C_get_outputs(SEXP ops_ptr){
+  CAST_PTR(ops, Ops, ops_ptr);
+
+  if (!ops->outputs_header)
+    return R_NilValue;
+
+  int n_linked_ops = get_chain_length(ops->outputs_header);
+
+  //http://adv-r.had.co.nz/C-interface.html#c-vectors
+  int* pout;
+  SEXP out = PROTECT(allocVector(INTSXP, n_linked_ops));
+  pout = INTEGER(out);
+
+  int i = 0;
+  struct Link* current_link = ops->outputs_header;
+  // This operation can be transformed into iter_links (?)
+  while(current_link){
+    pout[i] = current_link->contained->number;
+    i++;
+    current_link = current_link->next;
+  }
+  return out;
+}
+
 
 /*
  * Check, if operation is a root node
