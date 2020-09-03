@@ -17,23 +17,19 @@ struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops){
   ops->number = node_no;
   ops->R_ops = R_ops;
   ops->R_paired_ops = R_paired_ops;
+  ops->inputs_counter = 0;
+  ops->outputs_counter = 0;
   return ops;
 }
 
 // Combine with add_output_Ops
 // Tutaj prawdopodobnie jest błąd i powinno być: last_link(ops->inputs_header)
 void add_input_Ops(struct Ops* ops, struct Ops* input_ops){
-  if(!ops->inputs_header)
-    ops->inputs_header = create_Link(input_ops, NULL);
-  else
-    ops->inputs_header->next = create_Link(input_ops, NULL);
+  append_link(ops->inputs_header, input_ops, &(ops->inputs_counter));
 }
 
 void add_output_Ops(struct Ops* ops, struct Ops* output_ops){
-  if(!ops->outputs_header)
-    ops->outputs_header = create_Link(output_ops, NULL);
-  else
-    ops->outputs_header->next = create_Link(output_ops, NULL);
+  append_link(ops->outputs_header, output_ops, &(ops->outputs_counter));
 }
 
 SEXP C_get_ops_number(SEXP ops_ptr){
@@ -41,26 +37,14 @@ SEXP C_get_ops_number(SEXP ops_ptr){
   return ScalarInteger(ptr->number);
 }
 
-SEXP C_get_input_ptr(SEXP ops_ptr){
+SEXP C_get_inputs(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
-  if (!ops->inputs_header)
-    return R_NilValue;
-  // Transform into the ExternalPointer
-  SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(ops->inputs_header, R_NilValue, R_NilValue));
-  R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
-  UNPROTECT(1);
-  return new_ops_ptr;
+  return get_list(ops->inputs_header, ops->inputs_counter);
 }
 
-SEXP C_get_output_ptr(SEXP ops_ptr){
+SEXP C_get_outputs(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
-  if (!ops->outputs_header)
-    return R_NilValue;
-  // Transform into the ExternalPointer
-  SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(ops->outputs_header, R_NilValue, R_NilValue));
-  R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
-  UNPROTECT(1);
-  return new_ops_ptr;
+  return get_list(ops->outputs_header, ops->outputs_counter);
 }
 
 /*
@@ -76,60 +60,6 @@ SEXP C_get_paired_object(SEXP ops_ptr){
   return ops->R_paired_ops;
 }
 
-
-// Combine with C_get_outputs
-SEXP C_get_inputs(SEXP ops_ptr){
-  CAST_PTR(ops, Ops, ops_ptr);
-
-  if (!ops->inputs_header)
-    return R_NilValue;
-
-  int n_linked_ops = get_chain_length(ops->inputs_header);
-
-  //http://adv-r.had.co.nz/C-interface.html#c-vectors
-  int* pout;
-  SEXP out = PROTECT(allocVector(INTSXP, n_linked_ops));
-  pout = INTEGER(out);
-
-  int i = 0;
-  struct Link* current_link = ops->inputs_header;
-  // This operation can be transformed into iter_links (?)
-  while(current_link){
-    pout[i] = current_link->contained->number;
-    i++;
-    current_link = current_link->next;
-  }
-
-  UNPROTECT(1);
-
-  return out;
-}
-
-SEXP C_get_outputs(SEXP ops_ptr){
-  CAST_PTR(ops, Ops, ops_ptr);
-
-  if (!ops->outputs_header)
-    return R_NilValue;
-
-  int n_linked_ops = get_chain_length(ops->outputs_header);
-
-  //http://adv-r.had.co.nz/C-interface.html#c-vectors
-  int* pout;
-  SEXP out = PROTECT(allocVector(INTSXP, n_linked_ops));
-  pout = INTEGER(out);
-
-  int i = 0;
-  struct Link* current_link = ops->outputs_header;
-  // This operation can be transformed into iter_links (?)
-  while(current_link){
-    pout[i] = current_link->contained->number;
-    i++;
-    current_link = current_link->next;
-  }
-  return out;
-}
-
-
 /*
  * Check, if operation is a root node
  * Node is a root node if it has no 'inputs'
@@ -143,6 +73,5 @@ SEXP C_is_root(SEXP ops_ptr){
 // It can be real object only
 void free_chain(struct Ops* ops){
   // Check, if object is 'real'
-
   // free_chain recursively till reaching a real object
 }

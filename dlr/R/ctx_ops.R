@@ -41,28 +41,12 @@ get_inputs <- function(ops_ptr) {
   .Call(C_get_inputs, ops_ptr)
 }
 
-#' @name get_input_ptr
-#' @title Get operation inputs
-#' @useDynLib dlr C_get_input_ptr
-#' @export
-get_input_ptr <- function(ops_ptr) {
-  .Call(C_get_input_ptr, ops_ptr)
-}
-
 #' @name get_outputs
-#' @title Get operation outputs
+#' @title Get operation inputs
 #' @useDynLib dlr C_get_outputs
 #' @export
 get_outputs <- function(ops_ptr) {
   .Call(C_get_outputs, ops_ptr)
-}
-
-#' @name get_output_ptr
-#' @title Get operation inputs
-#' @useDynLib dlr C_get_output_ptr
-#' @export
-get_output_ptr <- function(ops_ptr) {
-  .Call(C_get_output_ptr, ops_ptr)
 }
 
 #' @name is_root

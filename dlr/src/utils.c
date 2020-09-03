@@ -22,8 +22,6 @@ int find_connection(SEXP Dlr_context, struct Ops* first_ops_ptr, struct Ops* sec
   return 0;
 }
 
-
-
 /* @name C_compare_ptr
  * @title Check if two pointers are the same
  * @param x external pointer
@@ -36,8 +34,6 @@ SEXP C_compare_ptr(SEXP x, SEXP y){
 
 /*
  * Get adjacency matrix for all the operations in the context
- *
- *
  */
 SEXP C_adjacency_matrix(SEXP ctx){
  CAST_PTR(context, DlrContext, ctx);
@@ -77,7 +73,6 @@ SEXP C_adjacency_matrix(SEXP ctx){
  int* ops_names_int = INTEGER(ops_names);
 
  // TODO: check length(dimnames) vs int mat_length = length(dimnames);
-
  // Iterate over all the 'cells' in the matrix
  for (int row=0; row < length(ops_names); row++){
     for (int col=0; col < length(ops_names); col++){
@@ -87,7 +82,6 @@ SEXP C_adjacency_matrix(SEXP ctx){
  }
 
  // TODO: add attribute with list of pointers
-
   UNPROTECT(3);
   return adj_mat;
 }

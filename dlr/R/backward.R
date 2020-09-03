@@ -22,7 +22,7 @@
 #' x <- cpu_tensor(5, dims = 1)
 #' y <- (x ** 3) / 2
 #' all.ops <- get_all_ops_ptr(ctx)
-#' get_inputs_ptr(all.ops[[6]])
+#' get_inputs(all.ops[[6]])
 backward <- function(ops, gradient){
 
   # For simplicity, suppose we have only one sequence of operations

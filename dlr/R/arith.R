@@ -91,10 +91,10 @@
 #' ============================================================== #
 #'                              DIVISION                          #
 #' ============================================================== #
-.division <- function(x, y) x * y
+.division <- function(x, y) x / y
 .division_deriv <-list(
-  x = function(x, y, result, grad) grad / y
-  y = function(x, y, result, grad) - grad * x / y**2 # check operations order
+  x = function(x, y, result, grad) grad / y,
+  y = function(x, y, result, grad) - grad * x / y**2  # check operations order
 )
 
 .arith_division <- function(x, y){
@@ -158,7 +158,7 @@ setMethod("Arith", c(e1="numeric", e2="cpu_tensor"),
 # =============================================================================================== #
 
 #' @examples
-setMethod("Arith", c(e1="numeric", e2="cpu_tensor"),
+setMethod("Arith", c(e1="cpu_tensor", e2="numeric"),
           function(e1, e2)
           {
             e2 <- scalar(e2)
@@ -167,4 +167,3 @@ setMethod("Arith", c(e1="numeric", e2="cpu_tensor"),
           },
           valueClass = "cpu_tensor"
 )
-

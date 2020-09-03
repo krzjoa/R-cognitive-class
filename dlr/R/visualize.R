@@ -36,5 +36,3 @@ plot.soprano_adjacency_matrix<- function(adj_mat){
 plot.dlr_context <- function(ctx){
   plot(adjacency_matrix(ctx))
 }
-
-
