@@ -67,3 +67,21 @@ scalar <- function(x){
     dims          = 1,
     requires_grad = FALSE)
 }
+
+
+#' @name set_tensor_grad
+#' @title Modify inplace
+#' @useDynLib dlr C_set_tensor_grad
+#' @examples
+#' library(dlr)
+#' ctx <- get_context()
+#' register_ops(ctx, cars)
+#' register_ops(ctx, data.frame)
+#' x <- cpu_tensor(5, dims = 1)
+#' pryr::address(x)
+#' set_tensor_grad(x, 777)
+#' pryr::address(x)
+#' @export
+set_tensor_grad <- function(tensor, grad){
+  .Call(C_set_tensor_grad, tensor, grad)
+}

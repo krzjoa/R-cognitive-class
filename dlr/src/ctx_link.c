@@ -36,6 +36,7 @@ int get_chain_length(struct Link* current_link){
 }
 
 void append_link(struct Link* link_header, struct Ops* ops, int* element_counter){
+  // printf("Name: %d\n", *element_counter);
   if(!link_header)
     link_header = create_Link(ops, NULL);
   else

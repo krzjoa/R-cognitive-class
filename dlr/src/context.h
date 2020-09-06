@@ -30,6 +30,7 @@ struct Ops{
   int outputs_counter;
 };
 
+
 void _Ops_finalizer(SEXP ext);
 struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops);
 void add_input_Ops(struct Ops* ops, struct Ops* input_ops);
@@ -65,6 +66,10 @@ SEXP C_compare_ptr(SEXP x, SEXP y);
 SEXP C_adjacency_matrix(SEXP ctx);
 
 // Array
+SEXP C_set_tensor_grad(SEXP cpu_tensor, SEXP grad_value);
+
+// S4 class
+// See: R_do_slot_asign
 
 //' Initializing DLL library
 //' * https://github.com/Rdatatable/data.table/blob/a8ec94484d2cc375d8295a94bacc5353576c238a/src/init.c

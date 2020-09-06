@@ -12,6 +12,7 @@
 #' https://github.com/HIPS/autograd/blob/master/autograd/numpy/numpy_vjps.py
 #'
 #' TODO: unify names ops vs ops_ptr
+#' TODO: flatten graph(?)
 #'
 #' We need to propagate information, if gradient is required or not
 #' @examples
@@ -26,13 +27,26 @@
 backward <- function(ops, gradient){
 
   # For simplicity, suppose we have only one sequence of operations
-  if (!inherits(ops, "cpu_tensor"))
-    stop("Error!")
+  # if (!inherits(ops, "cpu_tensor"))
+  #   stop("Error!")
+  inputs <- get_inputs(ops)
+
+  # Tensors has only one "inputs", i.e. backward functions
+  if (inherits(ops, "cpu_tensor")) {
+    backward_fun <- inputs[[1]]
+    backward(backward_fun, gradient)
+    return(NULL)
+  }
+
+  # Else, if we have a tensor
 
   #' We don't modify the tensor we start from
   #' We take a step back and get an operation
-  inputs <- get_input_ptr(ops)
 
+
+  for (inp in inputs) {
+    # backward(inp, )
+  }
 
   # Compute gradient
 
@@ -44,3 +58,12 @@ backward <- function(ops, gradient){
 
 
 }
+
+# backward.function and backwad.cpu_tensor
+
+
+match_deriv <- function(ops){
+
+}
+
+
