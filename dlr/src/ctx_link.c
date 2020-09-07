@@ -54,10 +54,14 @@ SEXP get_list(struct Link* header_link, int list_length){
   if (!header_link)
     return R_NilValue;
 
-  SEXP out = PROTECT(allocVector(VECSXP, list_length));
+  printf("Len1: %d", list_length);
+  // printf("Len2: %d", get_chain_length(header_link));
+
+  SEXP out = PROTECT(allocVector(VECSXP, list_length + 1));
   int current_index = 0;
 
-  while(header_link){
+  while(current_index < list_length){
+    printf("Lol");
     SEXP new_ops_ptr = PROTECT(R_MakeExternalPtr(header_link->contained, R_NilValue, R_NilValue));
     R_RegisterCFinalizerEx(new_ops_ptr, _Ops_finalizer, TRUE);
     SET_VECTOR_ELT(out, current_index, new_ops_ptr);

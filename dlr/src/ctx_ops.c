@@ -24,20 +24,20 @@ struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops){
 
 // Combine with add_output_Ops
 void add_input_Ops(struct Ops* ops, struct Ops* input_ops){
+  (ops->inputs_counter)++;
   if(!ops->inputs_header)
     ops->inputs_header = create_Link(input_ops, NULL);
   else
     last_link(ops->inputs_header)->next = create_Link(input_ops, NULL);
-  (ops->outputs_counter)++;
   // append_link(ops->inputs_header, input_ops, &(ops->inputs_counter));
 }
 
 void add_output_Ops(struct Ops* ops, struct Ops* output_ops){
+  (ops->outputs_counter)++;
   if(!ops->outputs_header)
     ops->outputs_header = create_Link(output_ops, NULL);
   else
     last_link(ops->outputs_header)->next = create_Link(output_ops, NULL);
-  (ops->outputs_counter)++;
   //append_link(ops->outputs_header, output_ops, &(ops->outputs_counter));
 }
 

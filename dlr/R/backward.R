@@ -23,7 +23,8 @@
 #' x <- cpu_tensor(5, dims = 1)
 #' y <- (x ** 3) / 2
 #' all.ops <- get_all_ops_ptr(ctx)
-#' get_inputs(all.ops[[6]])
+#' backward(y, 1)
+#' Błąd w poleceniu 'get_inputs(ops)':attempt to set index 2/2 in SET_VECTOR_ELT
 backward <- function(ops, gradient){
 
   # For simplicity, suppose we have only one sequence of operations
@@ -34,27 +35,30 @@ backward <- function(ops, gradient){
   # Tensors has only one "inputs", i.e. backward functions
   if (inherits(ops, "cpu_tensor")) {
     backward_fun <- inputs[[1]]
+    print(backward_fun)
     backward(backward_fun, gradient)
     return(NULL)
-  }
+  } else if (inherits(ops, "function")) {
+    deriv <- get_paired_object(ops)
+    print(inputs)
+    #' For every input to the function
+    #' 1. Find all the argumnets
+    #' 2. Get matching function
+    for (inp in seq_along(inputs)) {
+      deriv.at <- deriv[[inp]]
+      print("Deriv")
+      print(deriv.at)
 
-  # Else, if we have a tensor
-
-  #' We don't modify the tensor we start from
-  #' We take a step back and get an operation
-
-
-  for (inp in inputs) {
-    # backward(inp, )
+    }
   }
 
   # Compute gradient
 
 
-  if(is_root(tensor)) {
-    # Compute gradient & finish
-    return(NULL)
-  }
+  # if(is_root(tensor)) {
+  #   # Compute gradient & finish
+  #   return(NULL)
+  # }
 
 
 }
