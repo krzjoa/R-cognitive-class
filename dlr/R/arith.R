@@ -59,7 +59,7 @@
 )
 
 .arith_addition <- function(x, y){
-  .abstract_operator(.addition, .arith_addition, x, y)
+  .abstract_operator(.addition, .addition_deriv, x, y)
 }
 
 #' ============================================================== #

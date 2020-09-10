@@ -22,14 +22,19 @@
 #' register_ops(ctx, data.frame)
 #' x <- cpu_tensor(5, dims = 1)
 #' y <- (x ** 3) / 2
+#' bkw_fun <- get_inputs(y)[[1]]
+#' get_paired_object(bkw_fun)
 #' all.ops <- get_all_ops_ptr(ctx)
 #' backward(y, 1)
-#' Błąd w poleceniu 'get_inputs(ops)':attempt to set index 2/2 in SET_VECTOR_ELT
 backward <- function(ops, gradient){
+  #' For simplicity, suppose we have only
+  #' one sequence of operations
+  #' if (!inherits(ops, "cpu_tensor"))
+  #'   stop("Error!")
 
-  # For simplicity, suppose we have only one sequence of operations
-  # if (!inherits(ops, "cpu_tensor"))
-  #   stop("Error!")
+  if (is.null(ops))
+    return(NULL)
+
   inputs <- get_inputs(ops)
 
   # Tensors has only one "inputs", i.e. backward functions
@@ -38,33 +43,30 @@ backward <- function(ops, gradient){
     print(backward_fun)
     backward(backward_fun, gradient)
     return(NULL)
-  } else if (inherits(ops, "function")) {
+  # if (inherits(ops, "function"))
+  } else {
     deriv <- get_paired_object(ops)
-    print(inputs)
     #' For every input to the function
     #' 1. Find all the argumnets
     #' 2. Get matching function
-    for (inp in seq_along(inputs)) {
-      deriv.at <- deriv[[inp]]
-      print("Deriv")
-      print(deriv.at)
-
+    for (inp in seq_along(deriv)) {
+      deriv_at <- deriv[[inp]]
+      .x <- inputs[[1]]
+      .y <- inputs[[2]]
+      .result <- NULL
+      .grad <- deriv_at(.x, .y, .result, gradient)
+      set_tensor_grad(inputs[[inp]], .grad)
     }
   }
-
   # Compute gradient
-
-
   # if(is_root(tensor)) {
   #   # Compute gradient & finish
   #   return(NULL)
   # }
-
-
 }
 
-# backward.function and backwad.cpu_tensor
-
+#' backward.function and backwad.cpu_tensor
+#' backward.externalptr instead of functions
 
 match_deriv <- function(ops){
 

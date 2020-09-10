@@ -80,11 +80,11 @@ get_r_ops <- function(ctx, number) {
 #' @useDynLib dlr C_register_ops
 #' @export
 register_ops <- function(ctx, r.ops, paired.ops = NULL){
-  ptr     <- .Call(C_register_ops, ctx[['_container']], r.ops)
+  ptr     <- .Call(C_register_ops, ctx[['_container']], r.ops, paired.ops)
   ops.num <- get_ops_number(ptr)
   ctx[['ops']][[as.character(ops.num)]] <- r.ops
   if (!is.null(paired.ops))
-    ctx[['ops']][[as.character(ops.num)]] <- paired.ops
+    ctx[['paired.ops']][[as.character(ops.num)]] <- paired.ops
   return(ptr)
 }
 

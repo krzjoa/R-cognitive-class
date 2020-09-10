@@ -12,8 +12,8 @@ get_object <- function(ops.ptr){
 #' @title Get paired operatin such as function derivative
 #' @useDynLib dlr C_get_paired_object
 #' @export
-get_paired_object <- function(ops.ptr){
-  .Call(C_get_paired_object, ops.ptr)
+get_paired_object <- function(ops_ptr){
+  .Call(C_get_paired_object, get_soprano_pointer(ops_ptr))
 }
 
 #' Function for getting artificial number of the operation
@@ -38,7 +38,7 @@ add_output <- function(ops, output){
 #' @useDynLib dlr C_get_inputs
 #' @export
 get_inputs <- function(ops_ptr) {
-  .Call(C_get_inputs, ops_ptr)
+  .Call(C_get_inputs, get_soprano_pointer(ops_ptr))
 }
 
 #' @name get_outputs
@@ -46,7 +46,7 @@ get_inputs <- function(ops_ptr) {
 #' @useDynLib dlr C_get_outputs
 #' @export
 get_outputs <- function(ops_ptr) {
-  .Call(C_get_outputs, ops_ptr)
+  .Call(C_get_outputs, get_soprano_pointer(ops_ptr))
 }
 
 #' @name is_root

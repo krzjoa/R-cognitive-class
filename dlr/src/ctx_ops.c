@@ -24,7 +24,7 @@ struct Ops* create_Ops(int node_no, SEXP R_ops, SEXP R_paired_ops){
 
 // Combine with add_output_Ops
 void add_input_Ops(struct Ops* ops, struct Ops* input_ops){
-  (ops->inputs_counter)++;
+  ops->inputs_counter++;
   if(!ops->inputs_header)
     ops->inputs_header = create_Link(input_ops, NULL);
   else
@@ -33,7 +33,7 @@ void add_input_Ops(struct Ops* ops, struct Ops* input_ops){
 }
 
 void add_output_Ops(struct Ops* ops, struct Ops* output_ops){
-  (ops->outputs_counter)++;
+  ops->outputs_counter++;
   if(!ops->outputs_header)
     ops->outputs_header = create_Link(output_ops, NULL);
   else
@@ -61,11 +61,15 @@ SEXP C_get_outputs(SEXP ops_ptr){
  */
 SEXP C_get_object(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
+  if(!ops->R_ops)
+    return R_NilValue;
   return ops->R_ops;
 }
 
 SEXP C_get_paired_object(SEXP ops_ptr){
   CAST_PTR(ops, Ops, ops_ptr);
+  if(!ops->R_paired_ops)
+    return R_NilValue;
   return ops->R_paired_ops;
 }
 
