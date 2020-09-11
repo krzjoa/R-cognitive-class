@@ -37,6 +37,9 @@
   .fun   <- register_ops(get_context(), fun, deriv)
   connect(list(tensor.1, tensor.2), .fun)
 
+  # Skąd się bierze ten x?
+  # Dość poważny błąd: zapewne bran jest z globala
+  # Rozwiążanie: utworzyć pusty tensor itd.
   x@data          <- fun(tensor.1@data, tensor.2@data)
   x@pointer       <- register_ops(get_context(), x)
   x@requires_grad <- requires_grad

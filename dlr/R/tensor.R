@@ -40,22 +40,19 @@ setClassUnion("rray_class", members = c("vctrs_rray", "vctrs_vctr", "vctrs_rray_
 #' @title CPU tensor
 #' @export
 cpu_tensor <- function(data, dims, requires_grad = FALSE){
-
-  data <- rray(x = data, dim = dims)
-  grad <- rray(0, dim = dims)
-
   # TODO: remove xptr lib use
   tensor <- .cpu_tensor(
-    data          = data,
+    data          = rray(x = data, dim = dims),
     dims          = dims,
-    grad          = grad,
+    grad          = rray(0, dim = dims),
     pointer       = xptr::null_xptr(),
     requires_grad = requires_grad
   )
   ctx <- get_context()
-  ptr <- register_ops(ctx, tensor)
-  tensor@pointer <- ptr
-  tensor
+  register_ops(ctx, tensor)
+  # Wrong! tensor@pointer <- ptr
+
+  return(tensor)
 }
 
 #' @name scalar
