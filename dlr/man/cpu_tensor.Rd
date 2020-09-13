@@ -4,7 +4,7 @@
 \alias{cpu_tensor}
 \title{CPU tensor}
 \usage{
-cpu_tensor(data, dims, requires_grad = FALSE)
+cpu_tensor(data, dims, grad = NULL, requires_grad = FALSE)
 }
 \description{
 cpu_tensor class constructor

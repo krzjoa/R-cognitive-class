@@ -39,12 +39,18 @@ setClassUnion("rray_class", members = c("vctrs_rray", "vctrs_vctr", "vctrs_rray_
 #' @name cpu_tensor
 #' @title CPU tensor
 #' @export
-cpu_tensor <- function(data, dims, requires_grad = FALSE){
+cpu_tensor <- function(data, dims, grad = NULL, requires_grad = FALSE){
+
+  if (is.null(grad))
+    grad <- rray(0, dim = dims)
+  else
+    grad <- grad
+
   # TODO: remove xptr lib use
   tensor <- .cpu_tensor(
     data          = rray(x = data, dim = dims),
     dims          = dims,
-    grad          = rray(0, dim = dims),
+    grad          = grad,
     pointer       = xptr::null_xptr(),
     requires_grad = requires_grad
   )
@@ -53,6 +59,13 @@ cpu_tensor <- function(data, dims, requires_grad = FALSE){
   # Wrong! tensor@pointer <- ptr
 
   return(tensor)
+}
+
+#' @name empty_cpu_tensor
+#' @title Create empty cpu_tensor
+#' @export
+empty_cpu_tensor <- function(){
+  cpu_tensor(numeric(0), dim = 0)
 }
 
 #' @name scalar
@@ -64,7 +77,6 @@ scalar <- function(x){
     dims          = 1,
     requires_grad = FALSE)
 }
-
 
 #' @name set_tensor_grad
 #' @title Modify inplace
@@ -82,3 +94,12 @@ scalar <- function(x){
 set_tensor_grad <- function(tensor, grad){
   .Call(C_set_tensor_grad, tensor, grad)
 }
+
+#' @name set_slot
+#' @title Modify slot
+#' @useDynLib dlr C_set_slot
+#' @examples
+set_slot <- function(tensor, key, value){
+  .Call(C_set_slot, tensor, key, value)
+}
+

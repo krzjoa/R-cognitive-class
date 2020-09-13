@@ -43,12 +43,6 @@ backward <- function(ops, gradient){
 
     inputs <- get_inputs(ops)
 
-    # if (is.null(inputs))
-    #   print("LOL")
-
-    # if (is_root(ops))
-    #   return(NULL)
-
     .backward_function <- inputs[[1]]
     # print(get_object(.backward_function))
     backward(.backward_function, gradient)
@@ -76,9 +70,7 @@ backward <- function(ops, gradient){
       .ops <- inputs[[inp]]
       .obj <- get_object(.ops)
 
-      print(.obj)
-
-      set_tensor_grad(.obj, .grad)
+       set_tensor_grad(.obj, .grad)
 
       # Shortcut: we jump over the tensor to the backward function
       .backward_function <- get_inputs(.ops)[[1]]

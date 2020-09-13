@@ -1,11 +1,11 @@
 # Functions, which arguments are R objects such as functions and tensors
 
 # Abstract function
-.call_soprano <- function(ops){
-  if(is.null(ops))
-    return(NULL)
-  .Call(get_soprano_pointer(ops_ptr))
-}
+# .call_soprano <- function(ops){
+#   if(is.null(ops))
+#     return(NULL)
+#   .Call(get_soprano_pointer(ops_ptr))
+# }
 
 #' @name get_object
 #' @title Get paired operatin such as function derivative

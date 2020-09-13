@@ -86,7 +86,7 @@ register_ops <- function(ctx, r.ops, paired.ops = NULL){
   if (!is.null(paired.ops))
     ctx[['paired.ops']][[as.character(ops.num)]] <- paired.ops
   if (inherits(r.ops, "cpu_tensor"))
-    set_tensor_pointer(r.ops, ptr)
+    set_slot(r.ops, "pointer", ptr)
   return(ptr)
 }
 

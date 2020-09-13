@@ -67,6 +67,8 @@ SEXP C_adjacency_matrix(SEXP ctx);
 
 // Array
 SEXP C_set_tensor_grad(SEXP cpu_tensor, SEXP grad_value);
+SEXP C_set_tensor_pointer(SEXP cpu_tensor, SEXP grad_value);
+SEXP C_set_slot(SEXP cpu_tensor, SEXP key, SEXP value);
 
 // S4 class
 // See: R_do_slot_asign
