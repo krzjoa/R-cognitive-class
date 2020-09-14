@@ -1,0 +1,75 @@
+---
+title: "Double dispatch - S4 vs vctrs library"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Why do we may need double dispatch?
+
+In most cases, when writing R scripts or even creating R packages, it is enough to use common functions or S3 methods. However, there is one important field that forces us to consider **double dispatch** question:
+**arithemetic operators**.
+
+Suppose we'd like to create a class, which fits the problem we're currently working on.
+Let's name such class **beer**.
+
+```{r new.class}
+beer <- function(type){
+  structure(
+    list(type  = type),
+    class = "beer"
+  )
+}
+
+opener <- function(){
+  structure(list(), class = "opener")
+}
+
+pilsner <- beer("pilnser")
+my_opener <- opener()
+```
+
+Then, we create an operator which defines some non-standard behaviour.
+
+* if we add an opener to the beer, we get an **opened_beer**.
+* adding a **numeric** _x_, we get a case of beers (which even contain a negative number of bees, i.e. our owe...)
+* if second argument is different than a or **opener** or **numeric**, we get... untouched beer
+
+Let's demonstrate, how does it work:
+
+
+```{r beer.opener}
+`+.beer` <- function(a, b){
+  if (inherits(b, "opener")) {
+        return(structure(list(
+          name  = paste("opened", a$name)
+    ), class = "opened_beer"))
+  } else if (inherits(b, "numeric")) {
+    print("It's magic! You've got a case of beers!")
+    return(structure(list(
+        n_beers = 1 + b
+    ), class = "case_of_beers"))
+  } else {
+    return(a)
+  }
+}
+
+```
+
+```{r addition.1}
+pilsner + my_opener
+```
+
+```{r addition.2}
+pilsner + -0.1
+```
+
+Don't you think, that such operations should be **comutative**? 
+
+```{r addition.reversed.1}
+my_opener + pilsner
+```
+
+
