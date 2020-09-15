@@ -66,10 +66,117 @@ pilsner + my_opener
 pilsner + -0.1
 ```
 
-Don't you think, that such operations should be **comutative**? 
+Don't you think, that such operations should be **commutative**? 
 
 ```{r addition.reversed.1}
 my_opener + pilsner
 ```
+
+What did happen here? This is an example of the way the R interpreter handles arithmetic operator. It was described with details on [Hiroaki Yutani's blog](https://yutani.rbind.io/post/double-dispatch-of-s3-method/). Briefly speaking, in this paicular case R engine matched method to the second argument (not to the first one), because there is no `+.opener` S3 method. What about such trick:
+
+```{r commutative.addition}
+`+.opener` <- function(a, b) b + a
+```
+
+After that, the result is different:
+
+```{r addition.commutative.1, error=TRUE}
+my_opener + pilsner
+```
+Nope. When both objects have the `+` method defined and these methods are not the same, R is trying to resolve the conflict by applying an internal `+`. It obviously cannot work. This case could be easily solved using more 'ifs' in the `+.beer` beer function body. But let's face a different situation.
+```{r addition.commutative.2, error=TRUE}
+-0.1 + pilsner
+```
+
+What a mess!
+
+
+## Classic approach: S4 class
+
+To tam such code, we can use classic R approach, S4 methods.
+
+```{r s4}
+.S4_beer          <- setClass("S4_beer", representation(type = "character"))
+.S4_opened_beer   <- setClass("S4_opened_beer", representation(type = "character"))
+.S4_opener        <- setClass("S4_opener", representation(ID = "numeric"))
+.S4_case_of_beers <- setClass("S4_case_of_beers", representation(n_beers = "numeric"))
+
+setMethod("+", c(e1 = "S4_beer", e2 = "S4_opener"),
+          function(e1, e2){
+  if (inherits(e2, "S4_opener")) {
+        return(.S4_opened_beer(type  = paste("opened", e1@type)))
+  } else if (inherits(e2, "numeric")) {
+    print("It's magic! You've got a case of beers!")
+    return(.S4_case_of_beers(n_beers = 1 + e2))
+  } else {
+    return(e1)
+  }
+})
+
+setMethod("+", c(e1 = "S4_opener", e2 = "S4_beer"), 
+          function(e1, e2) e2 + e1)
+
+S4_beer <- .S4_beer(type = "IPA")
+S4_opener <- .S4_opener(ID = 1)
+```
+
+```{r s4.arith}
+S4_beer + S4_opener
+```
+
+```{r s4.arith.reversed}
+S4_opener + S4_beer
+```
+
+## vctrs library approach
+
+```{r vctrs}
+library(vctrs)
+vec_beer <- function(type){
+  new_vctr(
+     .data = list(type  = type),
+     class = "vec_beer"
+  )
+}
+
+vec_opener <- function(){
+  new_vctr(.data = list(), class = "vec_opener")
+}
+
+vec_pilsner   <- vec_beer("pilnser")
+my_vec_opener <- vec_opener()
+print(class(vec_pilsner))
+print(class(my_vec_opener))
+```
+
+```{r vctrs.methods}
+
+.fun <- function(a, b){
+  if (inherits(b, "opener")) {
+        return(structure(list(
+          name  = paste("opened", a$name)
+    ), class = "opened_beer"))
+  } else if (inherits(b, "numeric")) {
+    print("It's magic! You've got a case of beers!")
+    return(structure(list(
+        n_beers = 1 + b
+    ), class = "case_of_beers"))
+  } else {
+    return(a)
+  }
+}
+
+vec_arith.vec_beer.vec_opener <- function(op, x, y, ...){
+  switch(op,
+         `+` = .fun(x, y),
+         stop_incompatible_op(op, x, y)
+  )
+}
+
+vec_pilsner + my_vec_opener
+```
+
+
+## Benchmark
 
 
