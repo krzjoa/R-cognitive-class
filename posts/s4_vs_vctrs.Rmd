@@ -55,7 +55,6 @@ Let's demonstrate, how does it work:
     return(a)
   }
 }
-
 ```
 
 ```{r addition.1}
@@ -132,11 +131,17 @@ S4_opener + S4_beer
 
 ```{r vctrs}
 library(vctrs)
+
 vec_beer <- function(type){
-  new_vctr(
-     .data = list(type  = type),
-     class = "vec_beer"
-  )
+  new_vctr(.data = list(type  = type), class = "vec_beer")
+}
+
+vec_opened_beer <- function(type){
+  new_vctr(.data = list(type  = type), class = "vec_opened_beer")
+}
+
+vec_case_of_beers <- function(n_beers){
+  new_vctr(.data = list(n_beers  = n_beers), class = "vec_case_of_beers")
 }
 
 vec_opener <- function(){
@@ -152,31 +157,72 @@ print(class(my_vec_opener))
 ```{r vctrs.methods}
 
 .fun <- function(a, b){
-  if (inherits(b, "opener")) {
-        return(structure(list(
-          name  = paste("opened", a$name)
-    ), class = "opened_beer"))
+  if (inherits(b, "vec_opener")) {
+        return(vec_opened_beer(type  = paste("opened", a$type)))
   } else if (inherits(b, "numeric")) {
     print("It's magic! You've got a case of beers!")
-    return(structure(list(
-        n_beers = 1 + b
-    ), class = "case_of_beers"))
+    return(vec_case_of_beers(n_beers = 1 + b))
   } else {
     return(a)
   }
 }
 
+vec_arith.vec_beer <- function(op, x, y, ...) {
+  UseMethod("vec_arith.vec_beer", y)
+}
+
+vec_arith.vec_opener <- function(op, x, y, ...) {
+  UseMethod("vec_arith.vec_opener", y)
+}
+
 vec_arith.vec_beer.vec_opener <- function(op, x, y, ...){
   switch(op,
          `+` = .fun(x, y),
-         stop_incompatible_op(op, x, y)
+         #    stop_incompatible_op(op, x, y)
   )
 }
 
+vec_arith.vec_opener.vec_beer <- function(op, x, y, ...){
+  y + x
+} 
+
 vec_pilsner + my_vec_opener
+my_vec_opener + vec_pilsner
 ```
 
 
 ## Benchmark
+
+```{r benchmark}
+library(microbenchmark)
+library(ggplot2)
+  
+bm1 <- microbenchmark(
+  #s3_plain = pilsner + my_opener,
+  s4 = S4_beer + S4_opener,
+  s3_vec = vec_pilsner + my_vec_opener,
+  times = 1000
+)
+
+#bm$ntime <- microbenchmark:::convert_to_unit(bm$time, "t")
+
+# ggplot(bm) +
+#   geom_beeswarm(aes(x=expr, y=ntime))
+
+autoplot(bm1)
+```
+
+```{r benchmark.2}
+
+bm2 <- microbenchmark(
+  #s3_plain = pilsner + my_opener,
+  s4 = S4_opener + S4_beer,
+  s3_vec = my_vec_opener + vec_pilsner,
+  times = 1000
+)
+
+
+autoplot(bm2)
+```
 
 
