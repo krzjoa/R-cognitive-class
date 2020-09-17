@@ -5,11 +5,13 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+Sys.setenv(LANG = "en")
+Sys.setlocale("LC_MESSAGES", "en_US.utf8")
 ```
 
 ## Why do we may need double dispatch?
 
-In most cases, when writing R scripts or even creating R packages, it is enough to use common functions or S3 methods. However, there is one important field that forces us to consider **double dispatch** question:
+In most cases, when writing R scripts or even creating R packages, it is enough to use standard functions or S3 methods. However, there is one important field that forces us to consider **double dispatch** question:
 **arithemetic operators**.
 
 Suppose we'd like to create a class, which fits the problem we're currently working on.
@@ -17,10 +19,7 @@ Let's name such class **beer**.
 
 ```{r new.class}
 beer <- function(type){
-  structure(
-    list(type  = type),
-    class = "beer"
-  )
+  structure(list(type  = type),class = "beer")
 }
 
 opener <- function(){
@@ -36,6 +35,7 @@ Then, we create an operator which defines some non-standard behaviour.
 * if we add an opener to the beer, we get an **opened_beer**.
 * adding a **numeric** _x_, we get a case of beers (which even contain a negative number of bees, i.e. our owe...)
 * if second argument is different than a or **opener** or **numeric**, we get... untouched beer
+
 
 Let's demonstrate, how does it work:
 
@@ -71,7 +71,7 @@ Don't you think, that such operations should be **commutative**?
 my_opener + pilsner
 ```
 
-What did happen here? This is an example of the way the R interpreter handles arithmetic operator. It was described with details on [Hiroaki Yutani's blog](https://yutani.rbind.io/post/double-dispatch-of-s3-method/). Briefly speaking, in this paicular case R engine matched method to the second argument (not to the first one), because there is no `+.opener` S3 method. What about such trick:
+What did happen here? This is an example of the way the R interpreter handles arithmetic operator. It was described with details on [**Hiroaki Yutani's blog**](https://yutani.rbind.io/post/double-dispatch-of-s3-method/). Briefly speaking, in this particular case R engine matched method to the second argument (not to the first one), because there is no `+.opener` S3 method. What about such trick:
 
 ```{r commutative.addition}
 `+.opener` <- function(a, b) b + a
@@ -82,24 +82,29 @@ After that, the result is different:
 ```{r addition.commutative.1, error=TRUE}
 my_opener + pilsner
 ```
-Nope. When both objects have the `+` method defined and these methods are not the same, R is trying to resolve the conflict by applying an internal `+`. It obviously cannot work. This case could be easily solved using more 'ifs' in the `+.beer` beer function body. But let's face a different situation.
+We crashed our function call. When both objects have the `+` method defined and these methods are not the same, R is trying to resolve the conflict by applying an internal `+`. It obviously cannot work. This case could be easily solved using more 'ifs' in the `+.beer` beer function body. But let's face a different situation.
 ```{r addition.commutative.2, error=TRUE}
 -0.1 + pilsner
 ```
 
-What a mess!
+What a mess! Simple S3 methods are definitely not the best solution when we need the double dispatch.
 
+## S4 class: a classic approach
 
-## Classic approach: S4 class
+To civilize such code, we can use classic R approach, S4 methods. We'll start from S4 classes declaration.
 
-To tam such code, we can use classic R approach, S4 methods.
-
-```{r s4}
+```{r s4.classes}
 .S4_beer          <- setClass("S4_beer", representation(type = "character"))
 .S4_opened_beer   <- setClass("S4_opened_beer", representation(type = "character"))
 .S4_opener        <- setClass("S4_opener", representation(ID = "numeric"))
 .S4_case_of_beers <- setClass("S4_case_of_beers", representation(n_beers = "numeric"))
+```
 
+Then, we can two otptions, how to handle `+` operators. I didn't mention about it in the previous example, but both S3 and S4 operators are grouped as so-called **group generic functions** (learn more: [**S3**](https://stat.ethz.ch/R-manual/R-devel/library/base/html/groupGeneric.html), [**S4**](https://stat.ethz.ch/R-manual/R-devel/library/methods/html/S4groupGeneric.html)).
+
+We can set a S4 method for a single operator and that looks as follows:
+
+```{r s4.methods, eval=FALSE}
 setMethod("+", c(e1 = "S4_beer", e2 = "S4_opener"),
           function(e1, e2){
   if (inherits(e2, "S4_opener")) {
@@ -112,56 +117,105 @@ setMethod("+", c(e1 = "S4_beer", e2 = "S4_opener"),
   }
 })
 
-setMethod("+", c(e1 = "S4_opener", e2 = "S4_beer"), 
+setMethod("+", c(e1 = "S4_opener", e2 = "S4_beer"),
           function(e1, e2) e2 + e1)
+```
 
-S4_beer <- .S4_beer(type = "IPA")
+
+Alternatively, we can define a method for `Arith` geneneric and check, what method is exactly called at the moment.
+I decided to use the second approach, because it's more similar to the way the double dispatch is implemented in the **vctrs** library.
+```{r s4.methods.arith}
+.S4_fun <- function(e1, e2){
+  if (inherits(e2, "S4_opener")) {
+        return(.S4_opened_beer(type  = paste("opened", e1@type)))
+  } else if (inherits(e2, "numeric")) {
+    print("It's magic! You've got a case of beers!")
+    return(.S4_case_of_beers(n_beers = 1 + e2))
+  } else {
+    return(e1)
+  }
+}
+
+setMethod("Arith", c(e1 = "S4_beer", e2 = "S4_opener"),
+          function(e1, e2)
+          {
+            op = .Generic[[1]]
+            switch(op,
+                   `+`  = .S4_fun(e1, e2),
+                    stop("undefined operation")
+            )
+})
+
+setMethod("Arith", c(e1="S4_opener", e2="S4_beer"),
+          function(e1, e2)
+          { 
+            op = .Generic[[1]]
+            switch(op,
+                   `+`  = e2 + e1,
+                    stop("undefined operation")
+            )
+})
+```
+
+Let's create our class instances and do a piece of math.
+```{r s4.objects.instances}
+S4_pilsner <- .S4_beer(type = "Pilsner")
 S4_opener <- .S4_opener(ID = 1)
 ```
 
 ```{r s4.arith}
-S4_beer + S4_opener
+S4_pilsner + S4_opener
 ```
 
 ```{r s4.arith.reversed}
-S4_opener + S4_beer
+S4_opener + S4_pilsner
 ```
 
-## vctrs library approach
+Declared methods are clear, and, the most important: they work correctly.
+
+## vctrs library: a tidyverse approach
+
+[**vctrs**](https://github.com/r-lib/vctrs) is an interesting library, thought as a remedy for a couple of R disadvantages. It delivers, among others, a custom double-dispatch system based on well-known S3 mechanism.
+
+At the first step we declare class 'constructors'.
 
 ```{r vctrs}
 library(vctrs)
 
-vec_beer <- function(type){
+.vec_beer <- function(type){
   new_vctr(.data = list(type  = type), class = "vec_beer")
 }
 
-vec_opened_beer <- function(type){
+.vec_opened_beer <- function(type){
   new_vctr(.data = list(type  = type), class = "vec_opened_beer")
 }
 
-vec_case_of_beers <- function(n_beers){
+.vec_case_of_beers <- function(n_beers){
   new_vctr(.data = list(n_beers  = n_beers), class = "vec_case_of_beers")
 }
 
-vec_opener <- function(){
+.vec_opener <- function(){
   new_vctr(.data = list(), class = "vec_opener")
 }
-
-vec_pilsner   <- vec_beer("pilnser")
-my_vec_opener <- vec_opener()
-print(class(vec_pilsner))
-print(class(my_vec_opener))
 ```
 
+Then, we create class instances.
+```{r vctrs.class.instances}
+vec_pilsner   <- .vec_beer("pilnser")
+vec_opener <- .vec_opener()
+print(class(vec_pilsner))
+print(class(vec_opener))
+```
+
+At the end, we write a double-dispatched methods **in vctrs style**. As you can see, 
 ```{r vctrs.methods}
 
 .fun <- function(a, b){
   if (inherits(b, "vec_opener")) {
-        return(vec_opened_beer(type  = paste("opened", a$type)))
+        return(.vec_opened_beer(type  = paste("opened", a$type)))
   } else if (inherits(b, "numeric")) {
     print("It's magic! You've got a case of beers!")
-    return(vec_case_of_beers(n_beers = 1 + b))
+    return(.vec_case_of_beers(n_beers = 1 + b))
   } else {
     return(a)
   }
@@ -178,7 +232,7 @@ vec_arith.vec_opener <- function(op, x, y, ...) {
 vec_arith.vec_beer.vec_opener <- function(op, x, y, ...){
   switch(op,
          `+` = .fun(x, y),
-         #    stop_incompatible_op(op, x, y)
+         stop_incompatible_op(op, x, y)
   )
 }
 
@@ -186,43 +240,79 @@ vec_arith.vec_opener.vec_beer <- function(op, x, y, ...){
   y + x
 } 
 
-vec_pilsner + my_vec_opener
-my_vec_opener + vec_pilsner
+vec_pilsner + vec_opener
+vec_opener + vec_pilsner
 ```
 
+It works properly, too.
 
 ## Benchmark
 
-```{r benchmark}
+I've created all the classes and methods above not only to demonstate, how to implement double dispatch in R.
+My main goal is to benchmark both appraoches and check, which one has smaller overhead. The computer they were tested on is
+
+```{r sys}
+sessionInfo()
+```
+
+I tested it ob my good old notebook, which is no a beast.
+```{r cpu.and.ram, echo=FALSE}
+print(benchmarkme::get_cpu())
+print("RAM")
+print(benchmarkme::get_ram())
+
+```
+
+```{r load.libs}
 library(microbenchmark)
 library(ggplot2)
-  
+```
+
+### Beer + opener
+```{r benchmark} 
 bm1 <- microbenchmark(
-  #s3_plain = pilsner + my_opener,
-  s4 = S4_beer + S4_opener,
-  s3_vec = vec_pilsner + my_vec_opener,
+  s4 = S4_pilsner + S4_opener,
+  s3_vec = vec_pilsner + vec_opener,
   times = 1000
 )
+```
 
-#bm$ntime <- microbenchmark:::convert_to_unit(bm$time, "t")
-
-# ggplot(bm) +
-#   geom_beeswarm(aes(x=expr, y=ntime))
-
+```{r print.results.1, echo=FALSE, message=FALSE}
+print(bm1)
 autoplot(bm1)
 ```
 
+### Opener + beer
 ```{r benchmark.2}
-
 bm2 <- microbenchmark(
-  #s3_plain = pilsner + my_opener,
-  s4 = S4_opener + S4_beer,
-  s3_vec = my_vec_opener + vec_pilsner,
+  s4 = S4_opener + S4_pilsner,
+  s3_vec = vec_opener + vec_pilsner,
   times = 1000
 )
+```
+
+### Bonus: opener + beer vs addtion of numerics
+```{r benchmark.3}
+bm2 <- microbenchmark(
+  simple_R = 1 + 2,
+  s4 = S4_opener + S4_pilsner,
+  s3_vec = vec_opener + vec_pilsner,
+  times = 1000
+)
+```
 
 
+```{r print.results.2, echo=FALSE, message=FALSE}
+print(bm2)
 autoplot(bm2)
 ```
+
+## Further sources
+
+If you are interesting, how to implement double-dispatched operators in S4, I encourage you to get familiar with code of the following R libraries:
+
+* [Matrix](https://github.com/cran/Matrix/blob/master/R/Ops.R)
+* [gpuR](https://github.com/cdeterman/gpuR/blob/master/R/methods-gpuVector.R)
+
 
 
