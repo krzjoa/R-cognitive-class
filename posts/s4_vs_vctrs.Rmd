@@ -1,6 +1,8 @@
 ---
 title: "Double dispatch - S4 vs vctrs library"
-output: html_document
+output:
+  md_document:
+    variant: markdown_github    
 ---
 
 ```{r setup, include=FALSE}
@@ -9,6 +11,8 @@ Sys.setenv(LANG = "en")
 Sys.setlocale("LC_MESSAGES", "en_US.utf8")
 ```
 
+<a><img src='https://raw.githubusercontent.com/krzjoa/krzjoa.github.io/master/assets/img/2020-09-17-S4-vs-vctrs/S4_vs_vctrs.jpg' align="center"/></a>
+    
 ## Why do we may need double dispatch?
 
 In most cases, when writing R scripts or even creating R packages, it is enough to use standard functions or S3 methods. However, there is one important field that forces us to consider **double dispatch** question:
@@ -249,19 +253,18 @@ It works properly, too.
 ## Benchmark
 
 I've created all the classes and methods above not only to demonstate, how to implement double dispatch in R.
-My main goal is to benchmark both appraoches and check, which one has smaller overhead. The computer they were tested on is
+My main goal is to benchmark both approaches and check, which one has smaller overhead. The hardware I used for the test looks as follows:
+
+```{r cpu.and.ram, echo=FALSE}
+print(benchmarkme::get_cpu())
+print(benchmarkme::get_ram())
+```
 
 ```{r sys}
 sessionInfo()
 ```
 
-I tested it ob my good old notebook, which is no a beast.
-```{r cpu.and.ram, echo=FALSE}
-print(benchmarkme::get_cpu())
-print("RAM")
-print(benchmarkme::get_ram())
-
-```
+It's my good old notebook, which is not a beast.
 
 ```{r load.libs}
 library(microbenchmark)
@@ -279,7 +282,7 @@ bm1 <- microbenchmark(
 
 ```{r print.results.1, echo=FALSE, message=FALSE}
 print(bm1)
-autoplot(bm1)
+autoplot(bm1) + ggtitle("Fig. 1: S4 vs vctrs addition")
 ```
 
 ### Opener + beer
@@ -291,9 +294,15 @@ bm2 <- microbenchmark(
 )
 ```
 
+```{r print.results.2, echo=FALSE, message=FALSE}
+print(bm2)
+autoplot(bm2) + ggtitle("Fig. 2: S4 vs vctrs addition")
+```
+
+
 ### Bonus: opener + beer vs addtion of numerics
 ```{r benchmark.3}
-bm2 <- microbenchmark(
+bm3 <- microbenchmark(
   simple_R = 1 + 2,
   s4 = S4_opener + S4_pilsner,
   s3_vec = vec_opener + vec_pilsner,
@@ -302,10 +311,14 @@ bm2 <- microbenchmark(
 ```
 
 
-```{r print.results.2, echo=FALSE, message=FALSE}
-print(bm2)
-autoplot(bm2)
+```{r print.results.3, echo=FALSE, message=FALSE}
+print(bm3)
+autoplot(bm3) + ggtitle("Fig. 3: S4 vs vctrs addition")
 ```
+
+## Conclusions
+
+It seems that **vctrs-based** performs better than traditional **S4 methods**. Obviously, I checked only one operation and probably some edge cases may exists. However, I think that it shows us some direction, what execution time we can expect.
 
 ## Further sources
 
@@ -314,5 +327,8 @@ If you are interesting, how to implement double-dispatched operators in S4, I en
 * [Matrix](https://github.com/cran/Matrix/blob/master/R/Ops.R)
 * [gpuR](https://github.com/cdeterman/gpuR/blob/master/R/methods-gpuVector.R)
 
+If you are looking for some examples of **vctrs**, I recommend you to learn the source code of:
 
+* [rray](https://github.com/r-lib/rray/blob/master/R/compat-vctrs-arith.R)
+* [banana](https://github.com/RMHogervorst/banana/blob/master/R/banana.R) (a funny toy package)
 

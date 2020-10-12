@@ -1,0 +1,169 @@
+---
+title: "Time Series & `torch` - Training network to compute moving average"
+output:
+  md_document:
+    variant: markdown_github    
+---
+
+In the previous year, I published [a post](https://krzjoa.github.io/2019/12/28/pytorch-ts-v1.html), which as I hoped, was the first tutorial of the series describing how to effectively use PyTorch in Time Series Forecasting. Recently, a new exciting R package was submitted on CRAN. This great news was officially announced on the RStudio AI Blog. Yes, you mean right - the R port of PyTorch - called simply `torch` came into play. This encouraged me to reactivate my series, but in this time with both R and Pythonic versions. I'll begin with rewriting my previous-year post.
+
+### 1. Getting the data
+
+In PyTorch version I used a Shampoo sales dataset published by Rob Hyndman in his R package fma (a software appendix for the book _Forecasting: Methods and Applications_). Instead of installing Hyndman's lib, we'll download the dataset from the Web. It's because this version is already well-foramtted and we'll avoid additional transformation. First of all, let's present the `shampoo` dataset.
+
+```{r loading.libs, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(torch)
+```
+
+```{r download.data}
+shampoo <- read.csv("https://raw.githubusercontent.com/jbrownlee/Datasets/master/shampoo.csv")
+setDT(shampoo)
+shampoo[, n := 1:.N]
+```
+
+### 2. Simple visualization
+
+```{r getting.dataset}
+print(head(shampoo))
+```
+```{r shampoo.plot}
+ggplot(shampoo) +
+  geom_line(aes(x = n, y = Sales)) +
+  ggtitle("Shampoo dataset")
+```
+
+In this plot we can see an increasing trend, but in this excercise, data characterics make no diffeence for us.
+
+### 3. 1-d convolution in PyTorch: lightning-quick intro (or reminder)
+
+In the case of univariate time series, one-dimensional convolution is a sliding window applied over time series, an operation which consist of multiplications and additions. It was intuitively illustrated on the gif below.
+
+<center>
+<img src="https://raw.githubusercontent.com/krzjoa/krzjoa.github.io/master/assets/img/2019-19-28-pytorch-ts-v1/conv1d.gif" width="400">
+
+**Source: https://blog.floydhub.com/reading-minds-with-deep-learning/**
+</center>
+
+As you can see, output depend on input and kernel values. Defining proper kernel, we can apply the operation we want. For example, using a (0.5, 0.5) kernel, it will give us a two-element moving average. To test that, let’s do a simple experiment.
+
+### 4. Computing moving average with `data.table`
+
+Among its many features, `data.table` offers a set of 'fast' functions (with names prefixed with **f**). One example of this great stuff is a [**`frollmean`**](https://rdatatable.gitlab.io/data.table/reference/froll.html) functions, which computes moving average. We use a standard `head` function as well, to limit the output. What is worth to mention is that a **NA** appeared in the first row. It's because we can't compute moving avearge for the first element if we haven't added any padding on the beginning of the array; moreover, `frollmean` keeps the input's length, so the first element has no value.
+
+```{r dt.moving}
+ts <- shampoo$Sales
+
+ts %>% 
+  frollmean(2) %>% 
+  head(10)
+```
+### 5. Computing moving average with `torch`
+
+Now, let's reproduce this result using 1-dimensional convolution from `torch`.
+
+
+```{r create.tensor}
+ts_tensor <- torch_tensor(ts)$reshape(c(1, 1, -1))
+```
+Let's stop here for a moment. If you are not familiar with deep learning frameworks, you would be quite confused because of this `reshape` operation. What did we do above? We created a **3-dimensional tensor**; each number in `reshape` function describes respectively:
+
+1. number of samples
+2. number of channels
+3. length of time series
+
+Meaning of this values requires some explanation.
+
+1. **Number of samples** is the number of time series we are working on. As we want to perform computations for one time series only, the value must equal one.
+2. **Number of channels** is is the number of **features** or (independent) **variables**. We don't have any parallel variables containing information about, say, temperature or population. It's clear that this value must equal one too.
+3. **Length of time series**. Accordingly to `torch` tensor reshaping convention, minus one means *infer value for this dimension*. If one-dimensional time series length has 36 elements, after reshaping it to three-dimensional tensor with *number_of_samples* = 1 and *number_of_channels* = 1, the last value will be equal to 36.
+
+We have to do the same with the kernel.
+
+```{r torch.kernel}
+kernel <- c(0.5, 0.5)
+kernel_tensor <- torch_tensor(kernel)$reshape(c(1, 1, -1))
+torch_conv1d(ts_tensor, kernel_tensor)
+```
+
+As we can observe, the result is identical with values returned by `frollmean` function. The only difference is lack of **NA** on the beginning.
+
+### 6. Learning a network, which computes moving average
+
+Now, let's get to the point and train the network on the fully controllable example. I've called in this manner to distinguish it from the real-life ones. In most cases, when we train a machine learning model, we don't know the optimal parameter values. We are just trying to choose the best ones, but have no guarantee that they are globally optimal. Here, the optimal kernel value is known and should equal **[0.2, 0.2, 0.2, 0.2, 0.2]**.
+
+```{r next}
+X_tensor <-  torch_tensor(ts)$reshape(c(1,1,-1))
+```
+
+In the step below, we are preparing **targets** (**labels**), which equals to the five-element moving average.
+
+```{r targets}
+y <- frollmean(ts, 5)
+y <- y[-(1:4)]
+y_tensor <-  torch_tensor(y)$reshape(c(1,1,-1))
+y_tensor
+```
+We are building a one-layer convolutional neural network. It's good to highlight, that **we don't use any nonlinear activation function**. Last numerical value describes the length of the kernel, *padding = 0* means that we don't add any padding to the input, so we have to expect that output will be "trimmed".
+
+```{r net}
+net <- nn_conv1d(1, 1, 5, padding = 0, bias = FALSE)
+```
+Kernel is already initialized with, assume it for simplicity, *random* values.
+```{r torch.weights}
+net$parameters$weight
+```
+We can perform a convolution operation using this random value, calling **net$forward()** or simply **net()**. This two operations are equivalent.
+```{r torch.call}
+net(X_tensor)
+```
+We are initializing an optimizer object. I highly encourage you to experiment and start with **SGD** which may do not converge.
+```{r optim}
+# optimizer <- optim_sgd(net$parameters, lr = 0.01)
+optimizer <- optim_adam(net$parameters, lr = 0.01)
+```
+
+
+Here, he have only one example so it does not make sense to divide training into epochs.
+
+```{r train}
+running_loss <-  0.0
+
+for (iteration in 1:2000) {
+  
+    # Zeroing gradients. For more,
+    # see: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch
+    optimizer$zero_grad()
+
+    # Forward propagation
+    outputs <-  net(X_tensor)  
+
+    # Mean squared error
+    loss_value <- torch_mean((outputs - y_tensor)**2)
+
+    # Computing gradients
+    loss_value$backward()
+
+    # Changing network parameters with optimizer
+    optimizer$step()
+
+    # Extracting loss value from tensor
+    running_loss <-  running_loss + loss_value$item()
+    
+    flat_weights <- net$parameters$weight %>% 
+      as_array() %>% 
+      as.vector()
+    
+    if (iteration %% 50 == 0) {
+      print(glue::glue("[{iteration}] loss: {loss_value$item()}"))
+      print(flat_weights)
+    }
+}
+```
+
+As we can see in this example, algorithm converges and parameter values are becoming close to the **true solution**, i.e.
+**[0.2, 0.2, 0.2, 0.2, 0.2]**.
+
+On my blog, you can also find a [Python version](https://krzjoa.github.io/2019/12/28/pytorch-ts-v1.html) of this post.

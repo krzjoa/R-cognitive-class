@@ -1,0 +1,135 @@
+---
+title: "Time Series & `torch` - Autoregressive CNN for Univariate Time Series"
+output: html_document
+---
+
+Recurrent Neural Networks may seem to be most suitable for every sequence processing task. 
+I don't want to openly contest this statement.
+
+```{r loading.libs, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(torch)
+```
+
+```{r download.data}
+eu_stocks <- as.data.table(EuStockMarkets)
+setDT(eu_stocks)
+eu_stocks[, n := 1:.N]
+dax <- eu_stocks$DAX
+```
+
+### 2. Simple visualization
+
+```{r getting.dataset}
+print(head(eu_stocks))
+```
+```{r shampoo.plot}
+ggplot(eu_stocks) +
+  geom_line(aes(x = n, y = DAX)) +
+  ggtitle("DAX Stock")
+```
+
+### 3. 1-d convolution in PyTorch: lightning-quick intro (or reminder)
+
+```{r dt.moving}
+LENGTH <- 50
+
+# Train
+train_x <- head(dax, -200)
+train_y   <- na.omit(shift(train_x, LENGTH))
+
+length(train_x)
+length(train_y)
+
+# Test 
+test_dax <- tail(dax, 200)
+
+```
+
+```{r next}
+X_tensor <-  torch_tensor(train_x)$reshape(c(1,1,-1))
+y_tensor <-  torch_tensor(train_y)$reshape(c(1,1,-1))
+
+net(X_tensor)
+```
+
+```{r net}
+net <- nn_sequential(
+  nn_conv1d(1, 1, LENGTH + 1, padding = 0, bias = TRUE)
+)
+```
+
+```{r optim}
+optimizer <- optim_adam(net$parameters, lr = 0.03)
+```
+
+## Training
+
+```{r train}
+running_loss <-  0.0
+
+for (iteration in 1:4000) {
+  
+    # Zeroing gradients. For more,
+    # see: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch
+    optimizer$zero_grad()
+
+    # Forward propagation
+    outputs <-  net(X_tensor)  
+
+    # Mean squared error
+    loss_value <- torch_mean((outputs - y_tensor)**2)
+
+    # Computing gradients
+    loss_value$backward()
+
+    # Changing network parameters with optimizer
+    optimizer$step()
+
+    # Extracting loss value from tensor
+    running_loss <-  running_loss + loss_value$item()
+    
+    if (iteration %% 100 == 0) {
+      print(glue::glue("[{iteration}] loss: {loss_value$item()}"))
+    }
+}
+```
+
+## Inference
+
+
+```{r infer}
+
+input_ts <- tail(train_dax, LENGTH + 1)
+input_tensor <- torch_tensor(input_ts)$reshape(c(1,1,-1))
+
+output_vec <- torch_zeros(length(test_dax))
+
+for (i in seq_along(test_dax)) {
+  output <- net(input_tensor)
+  output_vec[i] <- output
+  input_tensor <- torch_roll(input_tensor, -1)
+  input_tensor[1, 1, LENGTH + 1] <- output
+}
+
+```
+
+
+```{r plot}
+
+test_tbl <- data.table(
+  true = test_dax,
+  pred = as.vector(as_array(output_vec))
+)
+
+test_tbl[, n := 1:.N]
+
+
+ggplot(test_tbl) +
+  geom_line(aes(x = n, y = true), col = "blue") + 
+  geom_line(aes(x = n, y = pred), col = "red")
+
+
+```
